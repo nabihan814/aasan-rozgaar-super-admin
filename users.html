@@ -35,6 +35,10 @@ body{
  border:1px solid #ccc;
  border-radius:8px;
  margin-bottom:15px;
+ outline:none;
+}
+.search:focus{
+ border-color:#087f5b;
 }
 .user{
  background:white;
@@ -46,6 +50,7 @@ body{
 .row{
  display:flex;
  justify-content:space-between;
+ align-items:center;
  gap:10px;
  flex-wrap:wrap;
 }
@@ -57,14 +62,49 @@ body{
 .small{
  color:#777;
  font-size:13px;
- margin-top:5px;
+ margin-top:4px;
+}
+.balance-text{
+ font-weight:bold;
+ color:#333;
+ margin-top:4px;
+}
+.btn-group{
+ display:flex;
+ gap:6px;
+ align-items:center;
+ flex-wrap:wrap;
 }
 .btn{
  border:0;
  background:#087f5b;
  color:white;
- padding:9px 13px;
+ padding:8px 12px;
  border-radius:7px;
+ cursor:pointer;
+ font-size:13px;
+}
+.btn-danger{
+ background:#d9534f;
+}
+.btn:active{
+ transform:scale(.97);
+}
+.quick-balance-box{
+ margin-top:10px;
+ display:flex;
+ gap:6px;
+ background:#f9f9f9;
+ padding:8px;
+ border-radius:8px;
+}
+.quick-input{
+ width:110px;
+ padding:6px;
+ border:1px solid #ddd;
+ border-radius:6px;
+ font-size:13px;
+ outline:none;
 }
 .empty{
  background:white;
@@ -74,16 +114,15 @@ body{
  border-radius:12px;
 }
 </style></head><body><div class="header">
- <h1>👥 Users</h1>
+ <h1>👥 Users Management</h1>
 </div><div class="container"><a class="back" href="home.html">← Back to Home</a>
 
 <input
 class="search"
 id="search"
-placeholder="Search username, phone or email..."
+placeholder="Search username or phone..."
 oninput="render()"
-
-«»
+>
 
 <div id="list"></div></div><script>
 
@@ -172,6 +211,7 @@ function render(){
  list.innerHTML=users.map(u=>{
 
   const username=u.username||"Unknown";
+  const balance=Number(u.balance||0).toLocaleString("en-PK");
 
   const status=
    String(u.status||"Active").toLowerCase()==="blocked"
@@ -185,21 +225,73 @@ function render(){
      <div>
       <div class="name">${escapeHtml(username)}</div>
       <div class="small">Phone: ${escapeHtml(u.phone||"-")}</div>
+      <div class="balance-text">Balance: Rs ${balance}</div>
       <div class="small">Status: ${escapeHtml(status)}</div>
      </div>
 
-     <div>
+     <div class="btn-group">
       <button class="btn"
        onclick="openUser('${encodeURIComponent(username)}')">
-       View Details
+       Details
       </button>
      </div>
 
     </div>
+
+    <div class="quick-balance-box">
+     <input type="number" id="amt_${escapeHtml(username)}" class="quick-input" placeholder="Amount" min="1">
+     <button class="btn" onclick="modifyBalance('${escapeHtml(username)}', 'add')">+ Add</button>
+     <button class="btn btn-danger" onclick="modifyBalance('${escapeHtml(username)}', 'deduct')">- Deduct</button>
+    </div>
+
    </div>
   `;
 
  }).join("");
+}
+
+async function modifyBalance(username, action){
+ const inputId = "amt_" + username;
+ const amountVal = document.getElementById(inputId).value.trim();
+ const amount = parseFloat(amountVal);
+
+ if(!amountVal || isNaN(amount) || amount <= 0){
+  alert("Baraye meherbani theek amount likhein.");
+  return;
+}
+
+ const token = getAdminToken();
+ const csrfToken = sessionStorage.getItem("adminCsrfToken") || "";
+
+ try {
+  const response = await fetch(API_URL + "/api/admin/users/" + encodeURIComponent(username) + "/balance", {
+   method: "PATCH",
+   credentials: "include",
+   headers: {
+    "Authorization": "Bearer " + token,
+    "X-CSRF-Token": csrfToken,
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+   },
+   body: JSON.stringify({
+    action: action,
+    amount: amount
+   })
+  });
+
+  const data = await response.json();
+
+  if(!response.ok || !data.success){
+   throw new Error(data.message || "Balance update nahi ho saka.");
+  }
+
+  alert("Balance kamiyabi ke sath update ho gaya!");
+  loadUsers();
+
+ } catch (error) {
+  console.error("Balance update error:", error);
+  alert(error.message || "Balance update karne mein masla aaya.");
+ }
 }
 
 function openUser(username){
@@ -223,8 +315,6 @@ function escapeHtml(value){
 }
 
 loadUsers();
-
-setInterval(loadUsers,5000);
 
 </script></body>
 </html>
