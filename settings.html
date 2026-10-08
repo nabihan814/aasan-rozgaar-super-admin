@@ -2,10 +2,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Settings - Aasan Rozgaar</title><style>
-*{box-sizing:border-box}
-
-body{
+<title>Settings - Aasan Rozgaar</title>
+<style>
+*{box-sizing:border-box}body{
 margin:0;
 background:#f4f7f6;
 font-family:Arial,sans-serif;
@@ -81,19 +80,6 @@ margin-top:7px;
 outline:none
 }
 
-.save{
-width:100%;
-padding:13px;
-border:0;
-border-radius:8px;
-background:#087f5b;
-color:white;
-font-size:15px;
-font-weight:bold;
-cursor:pointer;
-margin-top:12px
-}
-
 .logout{
 width:100%;
 padding:13px;
@@ -114,35 +100,28 @@ font-size:13px;
 line-height:1.6
 }
 
-.success{
-display:none;
-background:#d8f5e7;
-color:#087f5b;
-padding:12px;
-border-radius:8px;
-margin-top:12px;
-font-size:13px
-}
-
 .danger{
 background:#fff0f0;
 border-left:4px solid #d9534f
 }
-</style></head><body><div class="header">
+</style>
+
+</head><body><div class="header">
 <h1>⚙️ Settings</h1>
 </div><div class="container"><a class="back" href="home.html">
 ← Back to Home
-</a><div class="box"><h2>Admin Information</h2><div class="row"><div class="label">
-Admin Username
-</div><div class="value" id="adminName">
-Admin
-</div></div><div class="row"><div class="label">
-Admin Session
-</div><div class="value" id="sessionStatus">
-Checking...
-</div></div></div><div class="box"><h2>Site Settings</h2><label class="label">
-Site Name
-</label><input
+</a><div class="box">
+<h2>Admin Information</h2><div class="row">
+<div class="label">Admin Username</div>
+<div class="value" id="adminName">Admin</div>
+</div><div class="row">
+<div class="label">Admin Session</div>
+<div class="value" id="sessionStatus">Checking...</div>
+</div>
+</div><div class="box">
+<h2>Site Settings</h2><label class="label">Site Name</label>
+
+<input
 type="text"
 id="siteName"
 value="Aasan Rozgaar"
@@ -153,28 +132,29 @@ readonly
 <div class="note" style="margin-top:12px">
 Site name is currently managed by the website code.
 There is no backend site-settings endpoint in the current API.
-</div></div><div class="box"><h2>Admin Password</h2><div class="note">
+</div>
+</div><div class="box">
+<h2>Admin Password</h2><div class="note">
 Admin password is securely managed on the backend through
 the server environment. It is not stored or changed through
 browser LocalStorage.
-</div></div><div class="box"><h2>System Information</h2><div class="row"><div class="label">
-Storage
-</div><div class="value">
-Backend / Database
-</div></div><div class="row"><div class="label">
-Backend
-</div><div class="value">
-Connected
-</div></div><div class="row"><div class="label">
-Admin Login
-</div><div class="value">
-Backend Authentication
-</div></div></div><div class="note"><strong>Security:</strong><br>
-
+</div>
+</div><div class="box">
+<h2>System Information</h2><div class="row">
+<div class="label">Storage</div>
+<div class="value">Backend / Database</div>
+</div><div class="row">
+<div class="label">Backend</div>
+<div class="value">Connected</div>
+</div><div class="row">
+<div class="label">Admin Login</div>
+<div class="value">Backend Authentication</div>
+</div>
+</div><div class="note">
+<strong>Security:</strong><br>
 Admin authentication is handled by the backend.
 Session tokens are kept in sessionStorage and are not
 stored as an admin password in LocalStorage.
-
 </div><div class="box danger"><h2 style="color:#d9534f">
 Admin Session
 </h2><button
@@ -340,4 +320,4 @@ localStorage.removeItem(
 checkAdminSession();
 
 </script></body>
-</html>
+  </html>
