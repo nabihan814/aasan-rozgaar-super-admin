@@ -1,8 +1,12 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Bonuses - Admin</title><style>
+
+<title>Bonuses - Admin</title>
+
+<style>
 *{
  box-sizing:border-box;
  margin:0;
@@ -49,7 +53,7 @@ body{
 
 .cards{
  display:grid;
- grid-template-columns:repeat(3,1fr);
+ grid-template-columns:repeat(4,1fr);
  gap:15px;
  margin-bottom:20px;
 }
@@ -65,6 +69,7 @@ body{
 .card h3{
  color:#087f3d;
  margin-bottom:8px;
+ font-size:15px;
 }
 
 .card strong{
@@ -84,6 +89,27 @@ body{
  border-color:#087f3d;
 }
 
+.tabs{
+ display:flex;
+ gap:8px;
+ margin-bottom:15px;
+ flex-wrap:wrap;
+}
+
+.tab{
+ padding:9px 15px;
+ border:0;
+ border-radius:7px;
+ background:#ddd;
+ cursor:pointer;
+ font-weight:bold;
+}
+
+.tab.active{
+ background:#087f3d;
+ color:white;
+}
+
 .table-box{
  background:white;
  border-radius:12px;
@@ -94,7 +120,7 @@ body{
 table{
  width:100%;
  border-collapse:collapse;
- min-width:800px;
+ min-width:900px;
 }
 
 th{
@@ -110,7 +136,7 @@ td{
 }
 
 .btn{
- padding:6px 12px;
+ padding:7px 12px;
  border:0;
  border-radius:6px;
  font-weight:bold;
@@ -128,8 +154,32 @@ td{
  background:#d9534f;
 }
 
-.btn:active{
- transform:scale(0.97);
+.btn:disabled{
+ opacity:.5;
+ cursor:not-allowed;
+}
+
+.status{
+ display:inline-block;
+ padding:5px 9px;
+ border-radius:6px;
+ font-size:11px;
+ font-weight:bold;
+}
+
+.pending{
+ background:#fff3cd;
+ color:#856404;
+}
+
+.approved{
+ background:#d1e7dd;
+ color:#0f5132;
+}
+
+.rejected{
+ background:#f8d7da;
+ color:#842029;
 }
 
 .empty{
@@ -146,175 +196,1035 @@ td{
  margin-bottom:15px;
 }
 
-@media(max-width:700px){
+.success{
+ background:#d1e7dd;
+ color:#0f5132;
+ padding:15px;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+
+.small{
+ color:#777;
+ font-size:12px;
+ margin-top:8px;
+}
+
+@media(max-width:900px){
+ .cards{
+  grid-template-columns:repeat(2,1fr);
+ }
+}
+
+@media(max-width:600px){
  .cards{
   grid-template-columns:1fr;
  }
+ 
  .header h1{
   font-size:21px;
  }
 }
-</style></head><body><div class="header">
+</style>
+</head>
+
+<body>
+
+<div class="header">
  <h1>Bonus Management</h1>
  <p>Admin Panel</p>
-</div><div class="container"><a href="home.html" class="back">
+</div>
+
+<div class="container">
+
+<a href="home.html" class="back">
  ← Back to Home
-</a><div class="cards"> <div class="card">
-  <h3>Level 1</h3>
-  <strong>10%</strong>
- </div> <div class="card">
-  <h3>Level 2</h3>
-  <strong>5%</strong>
- </div> <div class="card">
-  <h3>Status</h3>
-  <strong>Active</strong>
- </div></div><input
-type="text"
-id="search"
-class="search"
-placeholder="Search username / phone..."
-oninput="renderUsers()"
+</a>
+
+<div class="cards">
+
+ <div class="card">
+  <h3>Pending Bonus</h3>
+  <strong id="pendingTotal">Rs 0</strong>
+ </div>
+
+ <div class="card">
+  <h3>Approved Bonus</h3>
+  <strong id="approvedTotal">Rs 0</strong>
+ </div>
+
+ <div class="card">
+  <h3>Rejected Bonus</h3>
+  <strong id="rejectedTotal">Rs 0</strong>
+ </div>
+
+ <div class="card">
+  <h3>Bonus Users</h3>
+  <strong id="bonusUsers">0</strong>
+ </div>
+
+</div>
+
+<input
+ type="text"
+ id="search"
+ class="search"
+ placeholder="Search username / phone..."
+ oninput="renderUsers()"
 >
 
-<div id="message"></div><div class="table-box"><table><thead>
+<div class="tabs">
+
+ <button
+  class="tab active"
+  id="pendingTab"
+  onclick="setFilter('Pending')"
+ >
+  Pending
+ </button>
+
+ <button
+  class="tab"
+  id="approvedTab"
+  onclick="setFilter('Approved')"
+ >
+  Approved
+ </button>
+
+ <button
+  class="tab"
+  id="rejectedTab"
+  onclick="setFilter('Rejected')"
+ >
+  Rejected
+ </button>
+
+ <button
+  class="tab"
+  id="allTab"
+  onclick="setFilter('All')"
+ >
+  All
+ </button>
+
+</div>
+
+<div id="message"></div>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
 <tr>
  <th>S.No.</th>
  <th>User</th>
  <th>Phone</th>
- <th>Bonus Amount</th>
+ <th>Pending Bonus</th>
+ <th>Status</th>
  <th>Action</th>
 </tr>
-</thead><tbody id="bonusTable"></tbody></table></div></div><script>
 
-const API_URL = "https://aasan-rozgaar-backend.onrender.com";
+</thead>
+
+<tbody id="bonusTable"></tbody>
+
+</table>
+
+</div>
+
+<div class="small">
+ Bonus automatically refresh hota rahega.
+</div>
+
+</div>
+
+<script>
+
+const API_URL =
+ "https://aasan-rozgaar-backend.onrender.com";
+
 let users = [];
+let bonuses = [];
+let currentFilter = "Pending";
+
 
 function getAdminToken(){
- return sessionStorage.getItem("adminSessionToken");
+
+ return sessionStorage.getItem(
+  "adminSessionToken"
+ );
+
 }
 
-async function loadUsers(){
- const token = getAdminToken();
+
+function getCsrfToken(){
+
+ return sessionStorage.getItem(
+  "adminCsrfToken"
+ ) || "";
+
+}
+
+
+function logout(){
+
+ sessionStorage.clear();
+
+ window.location.href =
+  "login.html";
+
+}
+
+
+async function apiRequest(url, options = {}){
+
+ const token =
+  getAdminToken();
+
  if(!token){
-  window.location.href = "login.html";
-  return;
+
+  logout();
+  return null;
+
  }
 
- try{
-  const response = await fetch(API_URL + "/api/admin/users", {
-   method: "GET",
-   credentials: "include",
-   headers: {
-    "Authorization": "Bearer " + token,
-    "Accept": "application/json"
-   }
-  });
+ const headers = {
 
-  if(response.status === 401 || response.status === 403){
-   sessionStorage.clear();
-   window.location.href = "login.html";
+  "Authorization":
+   "Bearer " + token,
+
+  "Accept":
+   "application/json",
+
+  ...(options.headers || {})
+
+ };
+
+ const response =
+  await fetch(
+   API_URL + url,
+   {
+    ...options,
+    credentials:"include",
+    headers:headers
+   }
+  );
+
+ if(
+  response.status === 401 ||
+  response.status === 403
+ ){
+
+  logout();
+  return null;
+
+ }
+
+ return response;
+
+}
+
+
+async function loadUsers(){
+
+ try{
+
+  const response =
+   await apiRequest(
+    "/api/admin/users"
+   );
+
+  if(!response){
    return;
   }
 
   if(!response.ok){
-   throw new Error("Failed to load users");
+
+   throw new Error(
+    "Users load nahi ho sake."
+   );
+
   }
 
-  const data = await response.json();
-  users = Array.isArray(data.users) ? data.users : [];
+  const data =
+   await response.json();
+
+  users =
+   Array.isArray(data.users)
+    ? data.users
+    : [];
+
   renderUsers();
 
  }catch(error){
-  document.getElementById("message").innerHTML = `
-   <div class="error">Users load nahi ho sake.</div>
-  `;
+
+  showMessage(
+   error.message ||
+   "Users load nahi ho sake.",
+   "error"
+  );
+
  }
+
 }
 
-function renderUsers(){
- const tbody = document.getElementById("bonusTable");
- const search = document.getElementById("search").value.trim().toLowerCase();
 
- const filtered = users.filter(user=>{
-  const username = String(user.username || "").toLowerCase();
-  const phone = String(user.phone || "").toLowerCase();
-  return username.includes(search) || phone.includes(search);
- });
+async function loadBonuses(){
 
- if(!filtered.length){
-  tbody.innerHTML = `
-   <tr>
-    <td colspan="5" class="empty">No registered users found.</td>
-   </tr>
-  `;
-  return;
+ try{
+
+  const response =
+   await apiRequest(
+    "/api/admin/bonuses"
+   );
+
+  if(!response){
+   return;
+  }
+
+  if(!response.ok){
+
+   throw new Error(
+    "Bonus data load nahi ho saka."
+   );
+
+  }
+
+  const data =
+   await response.json();
+
+  bonuses =
+   Array.isArray(data.bonuses)
+    ? data.bonuses
+    : [];
+
+  updateStats();
+
+  renderUsers();
+
+ }catch(error){
+
+  showMessage(
+   error.message ||
+   "Bonus data load nahi ho saka.",
+   "error"
+  );
+
  }
 
- tbody.innerHTML = filtered.map((user, index)=>{
-  const username = user.username || "-";
-  const phone = user.phone || "-";
-  const bonusAmount = Number(user.bonusAmount || 0).toLocaleString("en-PK");
+}
 
-  return `
+
+function updateStats(){
+
+ let pending = 0;
+ let approved = 0;
+ let rejected = 0;
+
+ const usersWithBonus =
+  new Set();
+
+ bonuses.forEach(bonus => {
+
+  const amount =
+   Number(bonus.amount || 0);
+
+  const status =
+   String(
+    bonus.status || ""
+   );
+
+  if(status === "Pending"){
+
+   pending += amount;
+
+   usersWithBonus.add(
+    String(
+     bonus.username || ""
+    ).toLowerCase()
+   );
+
+  }
+
+  if(status === "Approved"){
+
+   approved += amount;
+
+  }
+
+  if(status === "Rejected"){
+
+   rejected += amount;
+
+  }
+
+ });
+
+ document.getElementById(
+  "pendingTotal"
+ ).textContent =
+  "Rs " +
+  pending.toLocaleString(
+   "en-PK",
+   {
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+   }
+  );
+
+ document.getElementById(
+  "approvedTotal"
+ ).textContent =
+  "Rs " +
+  approved.toLocaleString(
+   "en-PK",
+   {
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+   }
+  );
+
+ document.getElementById(
+  "rejectedTotal"
+ ).textContent =
+  "Rs " +
+  rejected.toLocaleString(
+   "en-PK",
+   {
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+   }
+  );
+
+ document.getElementById(
+  "bonusUsers"
+ ).textContent =
+  usersWithBonus.size;
+
+}
+
+
+function getUserPendingBonus(username){
+
+ return bonuses
+  .filter(bonus => {
+
+   return (
+    String(
+     bonus.username || ""
+    ).toLowerCase() ===
+    String(
+     username || ""
+    ).toLowerCase()
+    &&
+    String(
+     bonus.status || ""
+    ) === "Pending"
+   );
+
+  })
+  .reduce(
+   (total, bonus) =>
+    total +
+    Number(
+     bonus.amount || 0
+    ),
+   0
+  );
+
+}
+
+
+function getUserStatus(username){
+
+ const userBonuses =
+  bonuses.filter(bonus => {
+
+   return String(
+    bonus.username || ""
+   ).toLowerCase() ===
+   String(
+    username || ""
+   ).toLowerCase();
+
+  });
+
+ if(!userBonuses.length){
+
+  return "Pending";
+
+ }
+
+ const hasPending =
+  userBonuses.some(
+   bonus =>
+    String(
+     bonus.status || ""
+    ) === "Pending"
+  );
+
+ if(hasPending){
+
+  return "Pending";
+
+ }
+
+ const hasApproved =
+  userBonuses.some(
+   bonus =>
+    String(
+     bonus.status || ""
+    ) === "Approved"
+  );
+
+ if(hasApproved){
+
+  return "Approved";
+
+ }
+
+ return "Rejected";
+
+}
+
+
+function renderUsers(){
+
+ const tbody =
+  document.getElementById(
+   "bonusTable"
+  );
+
+ const search =
+  document
+   .getElementById("search")
+   .value
+   .trim()
+   .toLowerCase();
+
+ let filtered =
+  users.filter(user => {
+
+   const username =
+    String(
+     user.username || ""
+    ).toLowerCase();
+
+   const phone =
+    String(
+     user.phone || ""
+    ).toLowerCase();
+
+   const matchesSearch =
+    username.includes(search) ||
+    phone.includes(search);
+
+   if(!matchesSearch){
+
+    return false;
+
+   }
+
+   const pendingBonus =
+    getUserPendingBonus(
+     user.username
+    );
+
+   const status =
+    getUserStatus(
+     user.username
+    );
+
+   if(currentFilter === "Pending"){
+
+    return pendingBonus > 0;
+
+   }
+
+   if(currentFilter === "Approved"){
+
+    return (
+     pendingBonus <= 0 &&
+     status === "Approved"
+    );
+
+   }
+
+   if(currentFilter === "Rejected"){
+
+    return (
+     pendingBonus <= 0 &&
+     status === "Rejected"
+    );
+
+   }
+
+   return true;
+
+  });
+
+
+ if(!filtered.length){
+
+  tbody.innerHTML = `
    <tr>
-    <td>${index + 1}</td>
-    <td><b>${escapeHtml(username)}</b></td>
-    <td>${escapeHtml(phone)}</td>
-    <td>Rs ${bonusAmount}</td>
-    <td>
-     <button class="btn btn-approve" onclick="handleBonus('${escapeHtml(username)}', 'approve')">Approve</button>
-     <button class="btn btn-reject" onclick="handleBonus('${escapeHtml(username)}', 'reject')">Reject</button>
+    <td colspan="6" class="empty">
+     No bonus records found.
     </td>
    </tr>
   `;
- }).join("");
+
+  return;
+
+ }
+
+
+ tbody.innerHTML =
+  filtered.map(
+   (user,index) => {
+
+    const username =
+     user.username || "-";
+
+    const phone =
+     user.phone || "-";
+
+    const pendingBonus =
+     getUserPendingBonus(
+      username
+     );
+
+    const status =
+     getUserStatus(
+      username
+     );
+
+    let statusClass =
+     "pending";
+
+    if(status === "Approved"){
+
+     statusClass =
+      "approved";
+
+    }
+
+    if(status === "Rejected"){
+
+     statusClass =
+      "rejected";
+
+    }
+
+    const bonusDisplay =
+     pendingBonus.toLocaleString(
+      "en-PK",
+      {
+       minimumFractionDigits:2,
+       maximumFractionDigits:2
+      }
+     );
+
+    let actions = "";
+
+    if(pendingBonus > 0){
+
+     actions = `
+
+      <button
+       class="btn btn-approve"
+       onclick="handleBonus('${safeJs(username)}','approve')"
+      >
+       Approve
+      </button>
+
+      <button
+       class="btn btn-reject"
+       onclick="handleBonus('${safeJs(username)}','reject')"
+      >
+       Reject
+      </button>
+
+     `;
+
+    }else{
+
+     actions = `
+      <span style="color:#777;font-size:12px;">
+       No pending bonus
+      </span>
+     `;
+
+    }
+
+    return `
+
+     <tr>
+
+      <td>
+       ${index + 1}
+      </td>
+
+      <td>
+       <b>
+        ${escapeHtml(username)}
+       </b>
+      </td>
+
+      <td>
+       ${escapeHtml(phone)}
+      </td>
+
+      <td>
+       Rs ${bonusDisplay}
+      </td>
+
+      <td>
+
+       <span
+        class="status ${statusClass}"
+       >
+        ${escapeHtml(status)}
+       </span>
+
+      </td>
+
+      <td>
+       ${actions}
+      </td>
+
+     </tr>
+
+    `;
+
+   }
+  ).join("");
+
 }
 
-async function handleBonus(username, action){
- const token = getAdminToken();
- const csrfToken = sessionStorage.getItem("adminCsrfToken") || "";
 
- try {
-  const response = await fetch(API_URL + "/api/admin/bonus/action", {
-   method: "POST",
-   credentials: "include",
-   headers: {
-    "Authorization": "Bearer " + token,
-    "X-CSRF-Token": csrfToken,
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-   },
-   body: JSON.stringify({
-    username: username,
-    action: action
-   })
+function setFilter(filter){
+
+ currentFilter =
+  filter;
+
+ document
+  .querySelectorAll(".tab")
+  .forEach(button => {
+
+   button.classList.remove(
+    "active"
+   );
+
   });
 
-  const data = await response.json();
+ if(filter === "Pending"){
 
-  if(!response.ok || !data.success){
-   throw new Error(data.message || "Action fail ho gaya.");
+  document
+   .getElementById("pendingTab")
+   .classList.add("active");
+
+ }
+
+ if(filter === "Approved"){
+
+  document
+   .getElementById("approvedTab")
+   .classList.add("active");
+
+ }
+
+ if(filter === "Rejected"){
+
+  document
+   .getElementById("rejectedTab")
+   .classList.add("active");
+
+ }
+
+ if(filter === "All"){
+
+  document
+   .getElementById("allTab")
+   .classList.add("active");
+
+ }
+
+ renderUsers();
+
+}
+
+
+async function handleBonus(
+ username,
+ action
+){
+
+ const token =
+  getAdminToken();
+
+ const csrfToken =
+  getCsrfToken();
+
+ if(!token){
+
+  logout();
+  return;
+
+ }
+
+ const pendingAmount =
+  getUserPendingBonus(
+   username
+  );
+
+ if(pendingAmount <= 0){
+
+  alert(
+   "Is user ka koi pending bonus nahi hai."
+  );
+
+  return;
+
+ }
+
+ const actionText =
+  action === "approve"
+   ? "APPROVE"
+   : "REJECT";
+
+ const amountText =
+  "Rs " +
+  pendingAmount.toLocaleString(
+   "en-PK",
+   {
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+   }
+  );
+
+ const confirmed =
+  confirm(
+   "Username: " +
+   username +
+   "\n\n" +
+   "Pending Bonus: " +
+   amountText +
+   "\n\n" +
+   "Kya aap bonus ko " +
+   actionText +
+   " karna chahte hain?"
+  );
+
+ if(!confirmed){
+
+  return;
+
+ }
+
+ try{
+
+  const response =
+   await fetch(
+    API_URL +
+    "/api/admin/bonus/action",
+    {
+     method:"POST",
+
+     credentials:"include",
+
+     headers:{
+      "Authorization":
+       "Bearer " + token,
+
+      "X-CSRF-Token":
+       csrfToken,
+
+      "Content-Type":
+       "application/json",
+
+      "Accept":
+       "application/json"
+     },
+
+     body:JSON.stringify({
+      username:username,
+      action:action
+     })
+    }
+   );
+
+  if(
+   response.status === 401 ||
+   response.status === 403
+  ){
+
+   logout();
+   return;
+
   }
 
-  alert("Bonus successfully " + (action === 'approve' ? 'approved aur user ke balance mein transfer' : 'rejected') + " ho gaya!");
-  loadUsers();
+  const data =
+   await response.json();
 
- } catch (error) {
-  console.error("Bonus error:", error);
-  alert(error.message || "Bonus process karne mein masla aaya.");
+  if(
+   !response.ok ||
+   !data.success
+  ){
+
+   throw new Error(
+    data.message ||
+    data.error ||
+    "Bonus action fail ho gaya."
+   );
+
+  }
+
+  if(action === "approve"){
+
+   alert(
+    "Bonus successfully approve ho gaya.\n\n" +
+    "Approved Bonus: Rs " +
+    Number(
+     data.approvedBonus || 0
+    ).toLocaleString(
+     "en-PK",
+     {
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
+     }
+    ) +
+    "\n\n" +
+    "User balance update ho gaya."
+   );
+
+  }else{
+
+   alert(
+    "Bonus successfully reject ho gaya."
+   );
+
+  }
+
+  await loadUsers();
+  await loadBonuses();
+
+ }catch(error){
+
+  console.error(
+   "Bonus error:",
+   error
+  );
+
+  showMessage(
+   error.message ||
+   "Bonus process karne mein masla aaya.",
+   "error"
+  );
+
  }
+
 }
+
+
+function showMessage(
+ message,
+ type
+){
+
+ const box =
+  document.getElementById(
+   "message"
+  );
+
+ box.innerHTML = `
+  <div class="${type}">
+   ${escapeHtml(message)}
+  </div>
+ `;
+
+ setTimeout(() => {
+
+  box.innerHTML = "";
+
+ },5000);
+
+}
+
 
 function escapeHtml(value){
- return String(value ?? "")
-  .replace(/&/g,"&amp;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;")
-  .replace(/"/g,"&quot;")
-  .replace(/'/g,"&#039;");
+
+ return String(
+  value ?? ""
+ )
+ .replace(
+  /&/g,
+  "&amp;"
+ )
+ .replace(
+  /</g,
+  "&lt;"
+ )
+ .replace(
+  />/g,
+  "&gt;"
+ )
+ .replace(
+  /"/g,
+  "&quot;"
+ )
+ .replace(
+  /'/g,
+  "&#039;"
+ );
+
 }
 
-loadUsers();
-setInterval(loadUsers, 5000);
-</script></body>
+
+function safeJs(value){
+
+ return String(
+  value ?? ""
+ )
+ .replace(
+  /\\/g,
+  "\\\\"
+ )
+ .replace(
+  /'/g,
+  "\\'"
+ )
+ .replace(
+  /\r/g,
+  "\\r"
+ )
+ .replace(
+  /\n/g,
+  "\\n"
+ );
+
+}
+
+
+async function loadAll(){
+
+ await loadUsers();
+
+ await loadBonuses();
+
+}
+
+
+loadAll();
+
+setInterval(
+ loadAll,
+ 5000
+);
+
+</script>
+
+</body>
 </html>
