@@ -3,106 +3,243 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Admin Settings - Aasan Rozgaar</title>
+
 <style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-    }
-    body {
-        background: #f4f7f6;
-        color: #222;
-        padding-bottom: 40px;
-    }
-    .header {
-        background: linear-gradient(135deg, #087f5b, #0aa36f);
-        color: white;
-        padding: 18px;
-        text-align: center;
-    }
-    .header h1 {
-        font-size: 22px;
-    }
-    .container {
-        max-width: 650px;
-        margin: 20px auto;
-        padding: 0 15px;
-    }
-    .back {
-        display: inline-block;
-        background: #087f5b;
-        color: white;
-        text-decoration: none;
-        padding: 10px 15px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        font-size: 14px;
-    }
-    .box {
-        background: white;
-        padding: 22px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-    }
-    .box h2 {
-        color: #087f5b;
-        font-size: 18px;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #e5f8ed;
-        padding-bottom: 8px;
-    }
-    .form-group {
-        margin-bottom: 14px;
-    }
-    label {
-        display: block;
-        font-weight: bold;
-        font-size: 13px;
-        color: #444;
-        margin-bottom: 5px;
-    }
-    input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 14px;
-        outline: none;
-    }
-    input:focus {
-        border-color: #087f5b;
-    }
-    .btn {
-        width: 100%;
-        padding: 13px;
-        border: none;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: bold;
-        cursor: pointer;
-        color: white;
-        background: #087f5b;
-        margin-top: 5px;
-    }
-    .btn-login-as {
-        background: #17a2b8;
-    }
-    .btn:active {
-        transform: scale(0.99);
-    }
-    .msg {
-        margin-top: 10px;
-        font-size: 13px;
-        text-align: center;
-        font-weight: bold;
-    }
-    .success { color: #087f5b; }
-    .error { color: #d9534f; }
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f7f6;
+    color: #222;
+    padding-bottom: 40px;
+}
+
+.header {
+    background: linear-gradient(135deg, #087f5b, #0aa36f);
+    color: white;
+    padding: 20px 15px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 22px;
+}
+
+.container {
+    max-width: 650px;
+    margin: 20px auto;
+    padding: 0 15px;
+}
+
+.back {
+    display: inline-block;
+    background: #087f5b;
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.box {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+}
+
+.box h2 {
+    color: #087f5b;
+    font-size: 18px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e5f8ed;
+    padding-bottom: 8px;
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #087f5b;
+    box-shadow: 0 0 0 2px rgba(8,127,91,0.08);
+}
+
+.btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    background: #087f5b;
+    margin-top: 5px;
+}
+
+.btn:active {
+    transform: scale(0.99);
+}
+
+.btn-login-as {
+    background: #17a2b8;
+}
+
+.btn-block {
+    background: #d9534f;
+}
+
+.btn-search {
+    background: #087f5b;
+}
+
+.btn-reset {
+    background: #0aa36f;
+}
+
+.btn-unblock {
+    background: #087f5b;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.msg {
+    margin-top: 10px;
+    font-size: 13px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.success {
+    color: #087f5b;
+}
+
+.error {
+    color: #d9534f;
+}
+
+.info {
+    color: #17a2b8;
+}
+
+.user-found {
+    display: none;
+    margin-top: 16px;
+    padding: 15px;
+    background: #f1fbf6;
+    border: 1px solid #c9eadb;
+    border-radius: 9px;
+}
+
+.user-found-title {
+    font-weight: bold;
+    color: #087f5b;
+    margin-bottom: 10px;
+}
+
+.user-details {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.user-details strong {
+    color: #222;
+}
+
+.password-reset-area {
+    display: none;
+    margin-top: 14px;
+}
+
+.blocked-list {
+    margin-top: 18px;
+}
+
+.blocked-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 10px;
+}
+
+.blocked-user {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #fff3f3;
+    border: 1px solid #f1cccc;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.blocked-user:hover {
+    background: #ffe9e9;
+}
+
+.blocked-name {
+    font-weight: bold;
+    color: #b52b2b;
+    word-break: break-word;
+}
+
+.blocked-status {
+    font-size: 11px;
+    color: #d9534f;
+    white-space: nowrap;
+}
+
+.empty {
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+    padding: 12px 0;
+}
+
+.loading {
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+    padding: 10px;
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="header">
@@ -110,148 +247,1128 @@
 </div>
 
 <div class="container">
-    <a class="back" href="home.html">← Back to Dashboard</a>
 
-    <!-- 1. Password Change Box -->
+    <a class="back" href="home.html">
+        ← Back to Dashboard
+    </a>
+
+
+    <!-- =====================================================
+         1. USER PASSWORD RESET
+         ===================================================== -->
+
     <div class="box">
-        <h2>Change User Password</h2>
+
+        <h2>Reset User Password</h2>
+
         <div class="form-group">
+
             <label>Username</label>
-            <input type="text" id="passUsername" placeholder="Enter exact username">
+
+            <input
+                type="text"
+                id="passUsername"
+                placeholder="Enter exact username"
+                autocomplete="off"
+            >
+
         </div>
+
+
         <div class="form-group">
+
             <label>Phone Number</label>
-            <input type="text" id="passPhone" placeholder="Enter user phone number">
+
+            <input
+                type="text"
+                id="passPhone"
+                placeholder="Enter user's phone number"
+                autocomplete="off"
+            >
+
         </div>
-        <div class="form-group">
-            <label>New Password</label>
-            <input type="password" id="newPassword" placeholder="Enter new password">
+
+
+        <button
+            class="btn btn-search"
+            id="searchUserBtn"
+            onclick="searchUserForPasswordReset()"
+        >
+            Search User
+        </button>
+
+
+        <div
+            id="passMsg"
+            class="msg"
+        ></div>
+
+
+        <!-- USER FOUND -->
+
+        <div
+            id="userFoundBox"
+            class="user-found"
+        >
+
+            <div class="user-found-title">
+                ✓ User Found
+            </div>
+
+
+            <div
+                id="userDetails"
+                class="user-details"
+            ></div>
+
+
+            <div
+                id="passwordResetArea"
+                class="password-reset-area"
+            >
+
+                <div class="form-group">
+
+                    <label>New Password</label>
+
+                    <input
+                        type="password"
+                        id="newPassword"
+                        placeholder="Enter new password"
+                        autocomplete="new-password"
+                    >
+
+                </div>
+
+
+                <button
+                    class="btn btn-reset"
+                    id="resetPasswordBtn"
+                    onclick="resetUserPassword()"
+                >
+                    Reset Password
+                </button>
+
+            </div>
+
         </div>
-        <button class="btn" onclick="changeUserPassword()">Update Password</button>
-        <div id="passMsg" class="msg"></div>
+
     </div>
 
-    <!-- 2. Direct Login As User Box -->
+
+    <!-- =====================================================
+         2. DIRECT LOGIN AS USER
+         ===================================================== -->
+
     <div class="box">
+
         <h2>Direct Login As User</h2>
+
         <div class="form-group">
+
             <label>Username</label>
-            <input type="text" id="loginUsername" placeholder="Enter username to login">
+
+            <input
+                type="text"
+                id="loginUsername"
+                placeholder="Enter username to login"
+                autocomplete="off"
+            >
+
         </div>
-        <button class="btn btn-login-as" onclick="loginAsUser()">Login to User Account</button>
-        <div id="loginMsg" class="msg"></div>
+
+
+        <button
+            class="btn btn-login-as"
+            onclick="loginAsUser()"
+        >
+            Login to User Account
+        </button>
+
+
+        <div
+            id="loginMsg"
+            class="msg"
+        ></div>
+
+    </div>
+
+
+    <!-- =====================================================
+         3. BLOCK / UNBLOCK USER
+         ===================================================== -->
+
+    <div class="box">
+
+        <h2>Block / Unblock User</h2>
+
+
+        <div class="form-group">
+
+            <label>Username</label>
+
+            <input
+                type="text"
+                id="blockUsername"
+                placeholder="Enter username to block"
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <button
+            class="btn btn-block"
+            onclick="blockUser()"
+        >
+            Block User
+        </button>
+
+
+        <div
+            id="blockMsg"
+            class="msg"
+        ></div>
+
+
+        <div class="blocked-list">
+
+            <div class="blocked-title">
+                Blocked Users
+            </div>
+
+
+            <div id="blockedUsers">
+
+                <div class="loading">
+                    Loading...
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
 </div>
 
+
 <script>
-const API_URL = "https://aasan-rozgaar-backend.onrender.com";
+
+const API_URL =
+    "https://aasan-rozgaar-backend.onrender.com";
+
+
+/* =========================================================
+   ADMIN AUTH
+   ========================================================= */
 
 function getAdminToken() {
-    return sessionStorage.getItem("adminSessionToken") || "";
+
+    return (
+        sessionStorage.getItem(
+            "adminSessionToken"
+        ) || ""
+    );
+
 }
+
+
+function getAdminCsrfToken() {
+
+    return (
+        sessionStorage.getItem(
+            "adminCsrfToken"
+        ) || ""
+    );
+
+}
+
 
 if (!getAdminToken()) {
-    window.location.href = "login.html";
+
+    window.location.href =
+        "login.html";
+
 }
 
-// 1. Password Change Function
-async function changeUserPassword() {
-    const username = document.getElementById("passUsername").value.trim();
-    const phone = document.getElementById("passPhone").value.trim();
-    const newPassword = document.getElementById("newPassword").value;
-    const msgDiv = document.getElementById("passMsg");
 
-    if (!username || !phone || !newPassword) {
-        msgDiv.className = "msg error";
-        msgDiv.textContent = "Tamam fields lazmi bharein.";
+/* =========================================================
+   COMMON REQUEST HEADERS
+   ========================================================= */
+
+function adminHeaders(includeJson = false) {
+
+    const headers = {
+
+        "Authorization":
+            "Bearer " + getAdminToken(),
+
+        "X-CSRF-Token":
+            getAdminCsrfToken(),
+
+        "Accept":
+            "application/json"
+
+    };
+
+
+    if (includeJson) {
+
+        headers["Content-Type"] =
+            "application/json";
+
+    }
+
+
+    return headers;
+
+}
+
+
+/* =========================================================
+   1. SEARCH USER FOR PASSWORD RESET
+   ========================================================= */
+
+async function searchUserForPasswordReset() {
+
+    const username =
+        document
+        .getElementById("passUsername")
+        .value
+        .trim();
+
+
+    const phone =
+        document
+        .getElementById("passPhone")
+        .value
+        .trim();
+
+
+    const msgDiv =
+        document.getElementById(
+            "passMsg"
+        );
+
+
+    const foundBox =
+        document.getElementById(
+            "userFoundBox"
+        );
+
+
+    const details =
+        document.getElementById(
+            "userDetails"
+        );
+
+
+    const resetArea =
+        document.getElementById(
+            "passwordResetArea"
+        );
+
+
+    const searchButton =
+        document.getElementById(
+            "searchUserBtn"
+        );
+
+
+    /* Reset previous result */
+
+    foundBox.style.display =
+        "none";
+
+    resetArea.style.display =
+        "none";
+
+    details.innerHTML =
+        "";
+
+
+    if (!username || !phone) {
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            "Username aur phone number dono lazmi hain.";
+
         return;
     }
 
-    const token = getAdminToken();
-    const csrfToken = sessionStorage.getItem("adminCsrfToken") || "";
+
+    searchButton.disabled =
+        true;
+
+    searchButton.textContent =
+        "Searching...";
+
+
+    msgDiv.className =
+        "msg info";
+
+    msgDiv.textContent =
+        "User search ho raha hai...";
+
 
     try {
-        const response = await fetch(API_URL + "/api/admin/users/password", {
-            method: "PATCH",
-            credentials: "include",
-            headers: {
-                "Authorization": "Bearer " + token,
-                "X-CSRF-Token": csrfToken,
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ username, phone, newPassword })
-        });
 
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.message || "Password update nahi ho saka.");
+        const response =
+            await fetch(
+                API_URL +
+                "/api/admin/users/password/search",
+                {
+                    method: "POST",
+
+                    credentials:
+                        "include",
+
+                    headers:
+                        adminHeaders(true),
+
+                    body:
+                        JSON.stringify({
+                            username,
+                            phone
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            !data.success) {
+
+            throw new Error(
+                data.message ||
+                "User nahi mila."
+            );
+
         }
 
-        msgDiv.className = "msg success";
-        msgDiv.textContent = "Password kamiyabi ke sath change ho gaya!";
-        document.getElementById("passUsername").value = "";
-        document.getElementById("passPhone").value = "";
-        document.getElementById("newPassword").value = "";
+
+        /*
+         * USER FOUND
+         */
+
+        msgDiv.className =
+            "msg success";
+
+        msgDiv.textContent =
+            "User mil gaya.";
+
+
+        const foundUsername =
+            data.user &&
+            data.user.username
+                ? data.user.username
+                : username;
+
+
+        const foundPhone =
+            data.user &&
+            data.user.phone
+                ? data.user.phone
+                : phone;
+
+
+        details.innerHTML =
+            "<strong>Username:</strong> " +
+            escapeHtml(foundUsername) +
+            "<br>" +
+            "<strong>Phone:</strong> " +
+            escapeHtml(foundPhone);
+
+
+        foundBox.style.display =
+            "block";
+
+
+        resetArea.style.display =
+            "block";
+
+
+        document
+        .getElementById(
+            "newPassword"
+        )
+        .value = "";
+
+
+        document
+        .getElementById(
+            "newPassword"
+        )
+        .focus();
+
 
     } catch (error) {
-        msgDiv.className = "msg error";
-        msgDiv.textContent = error.message || "Masla darpesh aaya.";
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            error.message ||
+            "User search nahi ho saka.";
+
+    } finally {
+
+        searchButton.disabled =
+            false;
+
+        searchButton.textContent =
+            "Search User";
+
     }
+
 }
 
-// 2. Direct Login As User Function
+
+/* =========================================================
+   2. RESET USER PASSWORD
+   ========================================================= */
+
+async function resetUserPassword() {
+
+    const username =
+        document
+        .getElementById("passUsername")
+        .value
+        .trim();
+
+
+    const phone =
+        document
+        .getElementById("passPhone")
+        .value
+        .trim();
+
+
+    const newPassword =
+        document
+        .getElementById("newPassword")
+        .value;
+
+
+    const msgDiv =
+        document.getElementById(
+            "passMsg"
+        );
+
+
+    const resetButton =
+        document.getElementById(
+            "resetPasswordBtn"
+        );
+
+
+    if (!username ||
+        !phone ||
+        !newPassword) {
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            "New password enter karein.";
+
+        return;
+    }
+
+
+    if (newPassword.length < 6) {
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            "Password kam az kam 6 characters ka hona chahiye.";
+
+        return;
+    }
+
+
+    resetButton.disabled =
+        true;
+
+    resetButton.textContent =
+        "Resetting...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL +
+                "/api/admin/users/password",
+                {
+                    method: "PATCH",
+
+                    credentials:
+                        "include",
+
+                    headers:
+                        adminHeaders(true),
+
+                    body:
+                        JSON.stringify({
+                            username,
+                            phone,
+                            newPassword
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Password reset nahi ho saka."
+            );
+
+        }
+
+
+        msgDiv.className =
+            "msg success";
+
+        msgDiv.textContent =
+            "Password successfully reset ho gaya.";
+
+
+        document
+        .getElementById(
+            "passUsername"
+        )
+        .value = "";
+
+
+        document
+        .getElementById(
+            "passPhone"
+        )
+        .value = "";
+
+
+        document
+        .getElementById(
+            "newPassword"
+        )
+        .value = "";
+
+
+        document
+        .getElementById(
+            "userFoundBox"
+        )
+        .style.display = "none";
+
+
+    } catch (error) {
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            error.message ||
+            "Password reset nahi ho saka.";
+
+    } finally {
+
+        resetButton.disabled =
+            false;
+
+        resetButton.textContent =
+            "Reset Password";
+
+    }
+
+}
+
+
+/* =========================================================
+   3. DIRECT LOGIN AS USER
+   ========================================================= */
+
 async function loginAsUser() {
-    const username = document.getElementById("loginUsername").value.trim();
-    const msgDiv = document.getElementById("loginMsg");
+
+    const username =
+        document
+        .getElementById(
+            "loginUsername"
+        )
+        .value
+        .trim();
+
+
+    const msgDiv =
+        document.getElementById(
+            "loginMsg"
+        );
+
 
     if (!username) {
-        msgDiv.className = "msg error";
-        msgDiv.textContent = "Username likhna lazmi hai.";
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            "Username likhna lazmi hai.";
+
         return;
     }
 
-    const token = getAdminToken();
-    const csrfToken = sessionStorage.getItem("adminCsrfToken") || "";
 
     try {
-        const response = await fetch(API_URL + "/api/admin/impersonate", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Authorization": "Bearer " + token,
-                "X-CSRF-Token": csrfToken,
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ username })
-        });
 
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-            throw new Error(data.message || "Login fail ho gaya.");
+        const response =
+            await fetch(
+                API_URL +
+                "/api/admin/impersonate",
+                {
+                    method: "POST",
+
+                    credentials:
+                        "include",
+
+                    headers:
+                        adminHeaders(true),
+
+                    body:
+                        JSON.stringify({
+                            username
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Login fail ho gaya."
+            );
+
         }
 
-        // User session token save kar ke user side par redirect kar dein
+
         if (data.sessionToken) {
-            localStorage.setItem("userSessionToken", data.sessionToken);
-        }
-        localStorage.setItem("username", username);
 
-        msgDiv.className = "msg success";
-        msgDiv.textContent = "Redirecting to user account...";
+            localStorage.setItem(
+                "userSessionToken",
+                data.sessionToken
+            );
+
+        }
+
+
+        localStorage.setItem(
+            "username",
+            username
+        );
+
+
+        msgDiv.className =
+            "msg success";
+
+        msgDiv.textContent =
+            "Redirecting to user account...";
+
 
         setTimeout(() => {
-            // User side ka main page ya dashboard URL yahan open ho jaye ga
-            window.location.href = "https://nabihan814.github.io/aasan-rozgaar/home.html";
+
+            window.location.href =
+                "https://nabihan814.github.io/aasan-rozgaar/home.html";
+
         }, 1000);
 
+
     } catch (error) {
-        msgDiv.className = "msg error";
-        msgDiv.textContent = error.message || "User login nahi ho saka.";
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            error.message ||
+            "User login nahi ho saka.";
+
     }
+
 }
+
+
+/* =========================================================
+   4. BLOCK USER
+   ========================================================= */
+
+async function blockUser() {
+
+    const username =
+        document
+        .getElementById(
+            "blockUsername"
+        )
+        .value
+        .trim();
+
+
+    const msgDiv =
+        document.getElementById(
+            "blockMsg"
+        );
+
+
+    if (!username) {
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            "Username likhna lazmi hai.";
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL +
+                "/api/admin/users/block",
+                {
+                    method: "PATCH",
+
+                    credentials:
+                        "include",
+
+                    headers:
+                        adminHeaders(true),
+
+                    body:
+                        JSON.stringify({
+                            username
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            !data.success) {
+
+            throw new Error(
+                data.message ||
+                "User block nahi ho saka."
+            );
+
+        }
+
+
+        msgDiv.className =
+            "msg success";
+
+        msgDiv.textContent =
+            "User successfully block ho gaya.";
+
+
+        document
+        .getElementById(
+            "blockUsername"
+        )
+        .value = "";
+
+
+        loadBlockedUsers();
+
+
+    } catch (error) {
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            error.message ||
+            "User block nahi ho saka.";
+
+    }
+
+}
+
+
+/* =========================================================
+   5. LOAD BLOCKED USERS
+   ========================================================= */
+
+async function loadBlockedUsers() {
+
+    const container =
+        document.getElementById(
+            "blockedUsers"
+        );
+
+
+    const token =
+        getAdminToken();
+
+
+    if (!token) {
+
+        window.location.href =
+            "login.html";
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL +
+                "/api/admin/users/blocked",
+                {
+                    method: "GET",
+
+                    credentials:
+                        "include",
+
+                    headers:
+                        adminHeaders(false)
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Blocked users load nahi ho sake."
+            );
+
+        }
+
+
+        const users =
+            Array.isArray(data.users)
+                ? data.users
+                : [];
+
+
+        if (users.length === 0) {
+
+            container.innerHTML =
+                '<div class="empty">' +
+                'Abhi koi blocked user nahi hai.' +
+                '</div>';
+
+            return;
+        }
+
+
+        container.innerHTML =
+            users.map(
+                user => {
+
+                    const username =
+                        String(
+                            user.username || ""
+                        );
+
+
+                    return `
+                        <div
+                            class="blocked-user"
+                            onclick="unblockUser('${escapeJs(username)}')"
+                        >
+
+                            <span class="blocked-name">
+                                ${escapeHtml(username)}
+                            </span>
+
+                            <span class="blocked-status">
+                                BLOCKED • Tap to Unblock
+                            </span>
+
+                        </div>
+                    `;
+
+                }
+            ).join("");
+
+
+    } catch (error) {
+
+        container.innerHTML =
+            '<div class="empty">' +
+            escapeHtml(
+                error.message ||
+                "Blocked users load nahi ho sake."
+            ) +
+            '</div>';
+
+    }
+
+}
+
+
+/* =========================================================
+   6. UNBLOCK USER
+   ========================================================= */
+
+async function unblockUser(username) {
+
+    if (!username) {
+        return;
+    }
+
+
+    const confirmUnblock =
+        confirm(
+            "Kya aap " +
+            username +
+            " ko unblock karna chahte hain?"
+        );
+
+
+    if (!confirmUnblock) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL +
+                "/api/admin/users/unblock",
+                {
+                    method: "PATCH",
+
+                    credentials:
+                        "include",
+
+                    headers:
+                        adminHeaders(true),
+
+                    body:
+                        JSON.stringify({
+                            username
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            !data.success) {
+
+            throw new Error(
+                data.message ||
+                "User unblock nahi ho saka."
+            );
+
+        }
+
+
+        const msgDiv =
+            document.getElementById(
+                "blockMsg"
+            );
+
+
+        msgDiv.className =
+            "msg success";
+
+        msgDiv.textContent =
+            "User successfully unblock ho gaya.";
+
+
+        loadBlockedUsers();
+
+
+    } catch (error) {
+
+        const msgDiv =
+            document.getElementById(
+                "blockMsg"
+            );
+
+
+        msgDiv.className =
+            "msg error";
+
+        msgDiv.textContent =
+            error.message ||
+            "User unblock nahi ho saka.";
+
+    }
+
+}
+
+
+/* =========================================================
+   7. SECURITY HELPERS
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeJs(value) {
+
+    return String(value)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r");
+
+}
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+loadBlockedUsers();
+
 </script>
 
 </body>
