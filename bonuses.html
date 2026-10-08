@@ -80,6 +80,10 @@ body{
  outline:none;
 }
 
+.search:focus{
+ border-color:#087f3d;
+}
+
 .table-box{
  background:white;
  border-radius:12px;
@@ -105,22 +109,27 @@ td{
  border-bottom:1px solid #eee;
 }
 
-.status{
- padding:6px 10px;
- border-radius:20px;
- font-size:12px;
+.btn{
+ padding:6px 12px;
+ border:0;
+ border-radius:6px;
  font-weight:bold;
- display:inline-block;
+ cursor:pointer;
+ font-size:12px;
+ color:white;
+ margin-right:4px;
 }
 
-.available{
- background:#d4edda;
- color:#155724;
+.btn-approve{
+ background:#087f3d;
 }
 
-.unavailable{
- background:#eee;
- color:#666;
+.btn-reject{
+ background:#d9534f;
+}
+
+.btn:active{
+ transform:scale(0.97);
 }
 
 .empty{
@@ -137,20 +146,10 @@ td{
  margin-bottom:15px;
 }
 
-.note{
- background:#fff;
- padding:15px;
- border-left:4px solid #087f3d;
- border-radius:8px;
- margin-bottom:18px;
- line-height:1.5;
-}
-
 @media(max-width:700px){
  .cards{
   grid-template-columns:1fr;
  }
-
  .header h1{
   font-size:21px;
  }
@@ -167,255 +166,155 @@ td{
   <h3>Level 2</h3>
   <strong>5%</strong>
  </div> <div class="card">
-  <h3>Release</h3>
-  <strong>Manual</strong>
- </div></div><div class="note">
- <b>Bonus System:</b><br>
- Registered users backend database se load ho rahe hain.
- Bonus values is page par sirf display ke liye hain.
- Balance ya account amount is page se change nahi hota.
-</div><input
+  <h3>Status</h3>
+  <strong>Active</strong>
+ </div></div><input
 type="text"
 id="search"
 class="search"
 placeholder="Search username / phone..."
 oninput="renderUsers()"
-
-«»
+>
 
 <div id="message"></div><div class="table-box"><table><thead>
 <tr>
  <th>S.No.</th>
  <th>User</th>
  <th>Phone</th>
- <th>Level 1 Bonus</th>
- <th>Level 2 Bonus</th>
- <th>Total Bonus</th>
- <th>Status</th>
+ <th>Bonus Amount</th>
+ <th>Action</th>
 </tr>
 </thead><tbody id="bonusTable"></tbody></table></div></div><script>
 
-const API_URL =
- "https://aasan-rozgaar-backend.onrender.com";
-
+const API_URL = "https://aasan-rozgaar-backend.onrender.com";
 let users = [];
 
 function getAdminToken(){
-
- return sessionStorage.getItem(
-  "adminSessionToken"
- );
-
+ return sessionStorage.getItem("adminSessionToken");
 }
 
 async function loadUsers(){
-
- const token =
-  getAdminToken();
-
+ const token = getAdminToken();
  if(!token){
-
-  window.location.href =
-   "login.html";
-
+  window.location.href = "login.html";
   return;
-
  }
 
  try{
+  const response = await fetch(API_URL + "/api/admin/users", {
+   method: "GET",
+   credentials: "include",
+   headers: {
+    "Authorization": "Bearer " + token,
+    "Accept": "application/json"
+   }
+  });
 
-  const response =
-   await fetch(
-    API_URL + "/api/admin/users",
-    {
-     method:"GET",
-     credentials:"include",
-     headers:{
-      "Authorization":
-       "Bearer " + token
-     }
-    }
-   );
-
-  if(
-   response.status === 401 ||
-   response.status === 403
-  ){
-
-   sessionStorage.removeItem(
-    "adminSessionToken"
-   );
-
-   sessionStorage.removeItem(
-    "adminCsrfToken"
-   );
-
-   sessionStorage.removeItem(
-    "adminUsername"
-   );
-
-   localStorage.removeItem(
-    "adminLoggedIn"
-   );
-
-   window.location.href =
-    "login.html";
-
+  if(response.status === 401 || response.status === 403){
+   sessionStorage.clear();
+   window.location.href = "login.html";
    return;
   }
 
   if(!response.ok){
-
-   throw new Error(
-    "Failed to load users"
-   );
-
+   throw new Error("Failed to load users");
   }
 
-  const data =
-   await response.json();
-
-  users =
-   Array.isArray(data.users)
-   ? data.users
-   : [];
-
+  const data = await response.json();
+  users = Array.isArray(data.users) ? data.users : [];
   renderUsers();
 
  }catch(error){
-
-  document.getElementById(
-   "message"
-  ).innerHTML = `
-   <div class="error">
-    Users load nahi ho sakin.
-   </div>
+  document.getElementById("message").innerHTML = `
+   <div class="error">Users load nahi ho sake.</div>
   `;
-
  }
-
 }
 
 function renderUsers(){
+ const tbody = document.getElementById("bonusTable");
+ const search = document.getElementById("search").value.trim().toLowerCase();
 
- const tbody =
-  document.getElementById(
-   "bonusTable"
-  );
-
- const search =
-  document.getElementById(
-   "search"
-  ).value
-  .trim()
-  .toLowerCase();
-
- const filtered =
-  users.filter(user=>{
-
-   const username =
-    String(
-     user.username || ""
-    ).toLowerCase();
-
-   const phone =
-    String(
-     user.phone || ""
-    ).toLowerCase();
-
-   return (
-    username.includes(search) ||
-    phone.includes(search)
-   );
-
-  });
+ const filtered = users.filter(user=>{
+  const username = String(user.username || "").toLowerCase();
+  const phone = String(user.phone || "").toLowerCase();
+  return username.includes(search) || phone.includes(search);
+ });
 
  if(!filtered.length){
-
   tbody.innerHTML = `
    <tr>
-    <td
-     colspan="7"
-     class="empty"
-    >
-     No registered users found.
-    </td>
+    <td colspan="5" class="empty">No registered users found.</td>
    </tr>
   `;
-
   return;
  }
 
- tbody.innerHTML =
-  filtered.map(
-   (user,index)=>{
+ tbody.innerHTML = filtered.map((user, index)=>{
+  const username = user.username || "-";
+  const phone = user.phone || "-";
+  const bonusAmount = Number(user.bonusAmount || 0).toLocaleString("en-PK");
 
-    const username =
-     user.username || "-";
+  return `
+   <tr>
+    <td>${index + 1}</td>
+    <td><b>${escapeHtml(username)}</b></td>
+    <td>${escapeHtml(phone)}</td>
+    <td>Rs ${bonusAmount}</td>
+    <td>
+     <button class="btn btn-approve" onclick="handleBonus('${escapeHtml(username)}', 'approve')">Approve</button>
+     <button class="btn btn-reject" onclick="handleBonus('${escapeHtml(username)}', 'reject')">Reject</button>
+    </td>
+   </tr>
+  `;
+ }).join("");
+}
 
-    const phone =
-     user.phone || "-";
+async function handleBonus(username, action){
+ const token = getAdminToken();
+ const csrfToken = sessionStorage.getItem("adminCsrfToken") || "";
 
-    return `
-     <tr>
+ try {
+  const response = await fetch(API_URL + "/api/admin/bonus/action", {
+   method: "POST",
+   credentials: "include",
+   headers: {
+    "Authorization": "Bearer " + token,
+    "X-CSRF-Token": csrfToken,
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+   },
+   body: JSON.stringify({
+    username: username,
+    action: action
+   })
+  });
 
-      <td>
-       ${index + 1}
-      </td>
+  const data = await response.json();
 
-      <td>
-       <b>
-        ${escapeHtml(username)}
-       </b>
-      </td>
+  if(!response.ok || !data.success){
+   throw new Error(data.message || "Action fail ho gaya.");
+  }
 
-      <td>
-       ${escapeHtml(phone)}
-      </td>
+  alert("Bonus successfully " + (action === 'approve' ? 'approved aur user ke balance mein transfer' : 'rejected') + " ho gaya!");
+  loadUsers();
 
-      <td>
-       -
-      </td>
-
-      <td>
-       -
-      </td>
-
-      <td>
-       -
-      </td>
-
-      <td>
-       <span class="status unavailable">
-        Not available
-       </span>
-      </td>
-
-     </tr>
-    `;
-
-   }
-  ).join("");
-
+ } catch (error) {
+  console.error("Bonus error:", error);
+  alert(error.message || "Bonus process karne mein masla aaya.");
+ }
 }
 
 function escapeHtml(value){
-
  return String(value ?? "")
   .replace(/&/g,"&amp;")
   .replace(/</g,"&lt;")
   .replace(/>/g,"&gt;")
   .replace(/"/g,"&quot;")
   .replace(/'/g,"&#039;");
-
 }
 
 loadUsers();
-
-setInterval(
- loadUsers,
- 5000
-);
-
+setInterval(loadUsers, 5000);
 </script></body>
 </html>
