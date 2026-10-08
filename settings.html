@@ -176,13 +176,19 @@ return sessionStorage.getItem(
 
 }
 
+function goToLogin(){
+
+window.location.href="./index.html";
+
+}
+
 async function checkAdminSession(){
 
 const token=getToken();
 
 if(!token){
 
-window.location.href="login.html";
+goToLogin();
 return;
 
 }
@@ -208,7 +214,7 @@ response.status===403
 
 clearSession();
 
-window.location.href="login.html";
+goToLogin();
 return;
 
 }
@@ -289,7 +295,7 @@ csrfToken || ""
 
 clearSession();
 
-window.location.href="login.html";
+goToLogin();
 
 }
 
@@ -320,4 +326,4 @@ localStorage.removeItem(
 checkAdminSession();
 
 </script></body>
-  </html>
+</html>
