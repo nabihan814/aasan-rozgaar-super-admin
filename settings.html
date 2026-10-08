@@ -1,329 +1,258 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Settings - Aasan Rozgaar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Settings - Aasan Rozgaar</title>
 <style>
-*{box-sizing:border-box}body{
-margin:0;
-background:#f4f7f6;
-font-family:Arial,sans-serif;
-color:#222
-}
-
-.header{
-background:linear-gradient(135deg,#087f5b,#0aa36f);
-color:white;
-padding:18px
-}
-
-.header h1{
-margin:0;
-font-size:22px
-}
-
-.container{
-max-width:700px;
-margin:auto;
-padding:15px
-}
-
-.back{
-display:inline-block;
-background:#087f5b;
-color:white;
-text-decoration:none;
-padding:10px 15px;
-border-radius:8px;
-margin-bottom:15px
-}
-
-.box{
-background:white;
-padding:20px;
-border-radius:13px;
-margin-bottom:15px;
-box-shadow:0 3px 12px rgba(0,0,0,.06)
-}
-
-.box h2{
-margin-top:0;
-color:#087f5b;
-font-size:18px
-}
-
-.row{
-padding:12px 0;
-border-bottom:1px solid #eee
-}
-
-.row:last-child{
-border-bottom:0
-}
-
-.label{
-color:#777;
-font-size:13px
-}
-
-.value{
-font-weight:bold;
-margin-top:5px
-}
-
-input{
-width:100%;
-padding:12px;
-border:1px solid #ccc;
-border-radius:8px;
-margin-top:7px;
-outline:none
-}
-
-.logout{
-width:100%;
-padding:13px;
-border:0;
-border-radius:8px;
-background:#d9534f;
-color:white;
-font-size:15px;
-cursor:pointer
-}
-
-.note{
-background:#fff8df;
-color:#725d00;
-padding:15px;
-border-radius:9px;
-font-size:13px;
-line-height:1.6
-}
-
-.danger{
-background:#fff0f0;
-border-left:4px solid #d9534f
-}
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+    body {
+        background: #f4f7f6;
+        color: #222;
+        padding-bottom: 40px;
+    }
+    .header {
+        background: linear-gradient(135deg, #087f5b, #0aa36f);
+        color: white;
+        padding: 18px;
+        text-align: center;
+    }
+    .header h1 {
+        font-size: 22px;
+    }
+    .container {
+        max-width: 650px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+    .back {
+        display: inline-block;
+        background: #087f5b;
+        color: white;
+        text-decoration: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    .box {
+        background: white;
+        padding: 22px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    }
+    .box h2 {
+        color: #087f5b;
+        font-size: 18px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #e5f8ed;
+        padding-bottom: 8px;
+    }
+    .form-group {
+        margin-bottom: 14px;
+    }
+    label {
+        display: block;
+        font-weight: bold;
+        font-size: 13px;
+        color: #444;
+        margin-bottom: 5px;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+    }
+    input:focus {
+        border-color: #087f5b;
+    }
+    .btn {
+        width: 100%;
+        padding: 13px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+        color: white;
+        background: #087f5b;
+        margin-top: 5px;
+    }
+    .btn-login-as {
+        background: #17a2b8;
+    }
+    .btn:active {
+        transform: scale(0.99);
+    }
+    .msg {
+        margin-top: 10px;
+        font-size: 13px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .success { color: #087f5b; }
+    .error { color: #d9534f; }
 </style>
+</head>
+<body>
 
-</head><body><div class="header">
-<h1>⚙️ Settings</h1>
-</div><div class="container"><a class="back" href="home.html">
-← Back to Home
-</a><div class="box">
-<h2>Admin Information</h2><div class="row">
-<div class="label">Admin Username</div>
-<div class="value" id="adminName">Admin</div>
-</div><div class="row">
-<div class="label">Admin Session</div>
-<div class="value" id="sessionStatus">Checking...</div>
+<div class="header">
+    <h1>⚙️ Admin Control Settings</h1>
 </div>
-</div><div class="box">
-<h2>Site Settings</h2><label class="label">Site Name</label>
 
-<input
-type="text"
-id="siteName"
-value="Aasan Rozgaar"
-readonly
+<div class="container">
+    <a class="back" href="home.html">← Back to Dashboard</a>
 
-«»
+    <!-- 1. Password Change Box -->
+    <div class="box">
+        <h2>Change User Password</h2>
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="passUsername" placeholder="Enter exact username">
+        </div>
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" id="passPhone" placeholder="Enter user phone number">
+        </div>
+        <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="newPassword" placeholder="Enter new password">
+        </div>
+        <button class="btn" onclick="changeUserPassword()">Update Password</button>
+        <div id="passMsg" class="msg"></div>
+    </div>
 
-<div class="note" style="margin-top:12px">
-Site name is currently managed by the website code.
-There is no backend site-settings endpoint in the current API.
+    <!-- 2. Direct Login As User Box -->
+    <div class="box">
+        <h2>Direct Login As User</h2>
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="loginUsername" placeholder="Enter username to login">
+        </div>
+        <button class="btn btn-login-as" onclick="loginAsUser()">Login to User Account</button>
+        <div id="loginMsg" class="msg"></div>
+    </div>
+
 </div>
-</div><div class="box">
-<h2>Admin Password</h2><div class="note">
-Admin password is securely managed on the backend through
-the server environment. It is not stored or changed through
-browser LocalStorage.
-</div>
-</div><div class="box">
-<h2>System Information</h2><div class="row">
-<div class="label">Storage</div>
-<div class="value">Backend / Database</div>
-</div><div class="row">
-<div class="label">Backend</div>
-<div class="value">Connected</div>
-</div><div class="row">
-<div class="label">Admin Login</div>
-<div class="value">Backend Authentication</div>
-</div>
-</div><div class="note">
-<strong>Security:</strong><br>
-Admin authentication is handled by the backend.
-Session tokens are kept in sessionStorage and are not
-stored as an admin password in LocalStorage.
-</div><div class="box danger"><h2 style="color:#d9534f">
-Admin Session
-</h2><button
-class="logout"
-onclick="logout()">
-🚪 Logout
-</button>
 
-</div></div><script>
+<script>
+const API_URL = "https://aasan-rozgaar-backend.onrender.com";
 
-const API_URL =
-"https://aasan-rozgaar-backend.onrender.com";
-
-function getToken(){
-
-return sessionStorage.getItem(
-"adminSessionToken"
-);
-
+function getAdminToken() {
+    return sessionStorage.getItem("adminSessionToken") || "";
 }
 
-function goToLogin(){
-
-window.location.href="./index.html";
-
+if (!getAdminToken()) {
+    window.location.href = "login.html";
 }
 
-async function checkAdminSession(){
+// 1. Password Change Function
+async function changeUserPassword() {
+    const username = document.getElementById("passUsername").value.trim();
+    const phone = document.getElementById("passPhone").value.trim();
+    const newPassword = document.getElementById("newPassword").value;
+    const msgDiv = document.getElementById("passMsg");
 
-const token=getToken();
+    if (!username || !phone || !newPassword) {
+        msgDiv.className = "msg error";
+        msgDiv.textContent = "Tamam fields lazmi bharein.";
+        return;
+    }
 
-if(!token){
+    const token = getAdminToken();
+    const csrfToken = sessionStorage.getItem("adminCsrfToken") || "";
 
-goToLogin();
-return;
+    try {
+        const response = await fetch(API_URL + "/api/admin/users/password", {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "X-CSRF-Token": csrfToken,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ username, phone, newPassword })
+        });
 
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Password update nahi ho saka.");
+        }
+
+        msgDiv.className = "msg success";
+        msgDiv.textContent = "Password kamiyabi ke sath change ho gaya!";
+        document.getElementById("passUsername").value = "";
+        document.getElementById("passPhone").value = "";
+        document.getElementById("newPassword").value = "";
+
+    } catch (error) {
+        msgDiv.className = "msg error";
+        msgDiv.textContent = error.message || "Masla darpesh aaya.";
+    }
 }
 
-try{
+// 2. Direct Login As User Function
+async function loginAsUser() {
+    const username = document.getElementById("loginUsername").value.trim();
+    const msgDiv = document.getElementById("loginMsg");
 
-const response=await fetch(
-API_URL+"/api/admin/me",
-{
-method:"GET",
-credentials:"include",
-headers:{
-"Authorization":
-"Bearer "+token
+    if (!username) {
+        msgDiv.className = "msg error";
+        msgDiv.textContent = "Username likhna lazmi hai.";
+        return;
+    }
+
+    const token = getAdminToken();
+    const csrfToken = sessionStorage.getItem("adminCsrfToken") || "";
+
+    try {
+        const response = await fetch(API_URL + "/api/admin/impersonate", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "X-CSRF-Token": csrfToken,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ username })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Login fail ho gaya.");
+        }
+
+        // User session token save kar ke user side par redirect kar dein
+        if (data.sessionToken) {
+            localStorage.setItem("userSessionToken", data.sessionToken);
+        }
+        localStorage.setItem("username", username);
+
+        msgDiv.className = "msg success";
+        msgDiv.textContent = "Redirecting to user account...";
+
+        setTimeout(() => {
+            // User side ka main page ya dashboard URL yahan open ho jaye ga
+            window.location.href = "https://nabihan814.github.io/aasan-rozgaar/home.html";
+        }, 1000);
+
+    } catch (error) {
+        msgDiv.className = "msg error";
+        msgDiv.textContent = error.message || "User login nahi ho saka.";
+    }
 }
-}
-);
+</script>
 
-if(
-response.status===401 ||
-response.status===403
-){
-
-clearSession();
-
-goToLogin();
-return;
-
-}
-
-if(!response.ok){
-
-document.getElementById(
-"sessionStatus"
-).textContent=
-"Unable to verify";
-
-return;
-
-}
-
-const data=
-await response.json();
-
-const username=
-data.username ||
-data.admin?.username ||
-sessionStorage.getItem(
-"adminUsername"
-) ||
-"Admin";
-
-document.getElementById(
-"adminName"
-).textContent=username;
-
-document.getElementById(
-"sessionStatus"
-).textContent="Active";
-
-}catch(error){
-
-document.getElementById(
-"sessionStatus"
-).textContent=
-"Backend unavailable";
-
-}
-
-}
-
-async function logout(){
-
-const token=getToken();
-
-const csrfToken=
-sessionStorage.getItem(
-"adminCsrfToken"
-);
-
-try{
-
-if(token){
-
-await fetch(
-API_URL+"/api/admin/logout",
-{
-method:"POST",
-credentials:"include",
-headers:{
-"Authorization":
-"Bearer "+token,
-"X-CSRF-Token":
-csrfToken || ""
-}
-}
-);
-
-}
-
-}catch(error){
-
-}
-
-clearSession();
-
-goToLogin();
-
-}
-
-function clearSession(){
-
-sessionStorage.removeItem(
-"adminSessionToken"
-);
-
-sessionStorage.removeItem(
-"adminCsrfToken"
-);
-
-sessionStorage.removeItem(
-"adminUsername"
-);
-
-localStorage.removeItem(
-"adminLoggedIn"
-);
-
-localStorage.removeItem(
-"adminUsername"
-);
-
-}
-
-checkAdminSession();
-
-</script></body>
-  </html>
+</body>
+</html>
