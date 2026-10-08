@@ -65,6 +65,11 @@ body{
  border:1px solid #ccc;
  border-radius:8px;
  margin-bottom:15px;
+ outline:none;
+}
+
+.search:focus{
+ border-color:#087f5b;
 }
 
 .request{
@@ -171,8 +176,7 @@ class="search"
 id="search"
 placeholder="Search username or TRX ID..."
 oninput="render()"
-
-«»
+>
 
 <div id="list"></div></div><script>
 
