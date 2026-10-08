@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Plans - Aasan Rozgaar</title><style>
+<title>Active Plans - Aasan Rozgaar</title><style>
 *{box-sizing:border-box}
 
 body{
@@ -110,11 +110,6 @@ th{
  color:#087f5b
 }
 
-.unavailable{
- background:#e7e7e7;
- color:#555
-}
-
 .empty{
  text-align:center;
  color:#777;
@@ -145,256 +140,141 @@ th{
  }
 }
 </style></head><body><div class="header">
- <h1>📦 Plans</h1>
+ <h1>📦 Active Plans Management</h1>
 </div><div class="container"><a class="back" href="home.html">
  ← Back to Home
 </a><div class="cards"> <div class="card">
-  <h3>Total Users</h3>
-  <strong id="totalUsers">0</strong>
- </div> <div class="card">
-  <h3>Plan Records</h3>
+  <h3>Active Plans Count</h3>
   <strong id="planRecords">0</strong>
+ </div> <div class="card">
+  <h3>Data Status</h3>
+  <strong style="font-size: 16px; color: #087f5b;">Live Sync</strong>
  </div> <div class="card">
   <h3>Data Source</h3>
   <strong>Backend</strong>
  </div></div><div class="info">
- <b>Plan Management</b><br>
- Registered users backend database se load ho rahe hain.
- Is page par available plan information sirf display hoti hai.
- Plan activate, pause, resume ya complete karne ka action
- yahan nahi hai.
+ <b>Active Plans Monitoring:</b><br>
+ Yahan sirf wohi users aur unke plans nazar aayenge jinhon ne active packages lagaye hue hain. Yeh backend se automatic fetch hote hain.
 </div><input
 class="search"
 id="search"
-placeholder="Search username or plan..."
+placeholder="Search username or plan name..."
 oninput="render()"
-
-«»
+>
 
 <div id="message"></div><div class="tablebox"><table><thead>
 <tr>
  <th>S.No.</th>
  <th>User</th>
- <th>Phone</th>
- <th>Plan</th>
+ <th>Plan Name</th>
  <th>Price</th>
- <th>Daily</th>
+ <th>Daily Profit</th>
  <th>Days</th>
  <th>Status</th>
 </tr>
 </thead><tbody id="list"></tbody></table></div></div><script>
 
-const API_URL =
- "https://aasan-rozgaar-backend.onrender.com";
-
-let users=[];
+const API_URL = "https://aasan-rozgaar-backend.onrender.com";
+let activePlansList = [];
 
 function getAdminToken(){
-
- return sessionStorage.getItem(
-  "adminSessionToken"
- );
-
+ return sessionStorage.getItem("adminSessionToken") || "";
 }
 
-async function loadUsers(){
-
- const token=getAdminToken();
+async function loadActivePlans(){
+ const token = getAdminToken();
 
  if(!token){
-
-  window.location.href="login.html";
+  window.location.href = "login.html";
   return;
-
  }
 
  try{
-
-  const response=await fetch(
-   API_URL+"/api/admin/users",
-   {
-    method:"GET",
-    credentials:"include",
-    headers:{
-     "Authorization":"Bearer "+token
-    }
+  const response = await fetch(API_URL + "/api/admin/plans/active", {
+   method: "GET",
+   credentials: "include",
+   headers: {
+    "Authorization": "Bearer " + token,
+    "Accept": "application/json"
    }
-  );
+  });
 
-  if(
-   response.status===401 ||
-   response.status===403
-  ){
-
-   sessionStorage.removeItem(
-    "adminSessionToken"
-   );
-
-   sessionStorage.removeItem(
-    "adminCsrfToken"
-   );
-
-   sessionStorage.removeItem(
-    "adminUsername"
-   );
-
-   localStorage.removeItem(
-    "adminLoggedIn"
-   );
-
-   window.location.href="login.html";
+  if(response.status === 401 || response.status === 403){
+   sessionStorage.clear();
+   window.location.href = "login.html";
    return;
   }
 
   if(!response.ok){
-   throw new Error("Failed to load users.");
+   throw new Error("Failed to load active plans.");
   }
 
-  const data=await response.json();
-
-  users=Array.isArray(data.users)
-   ? data.users
-   : [];
+  const data = await response.json();
+  activePlansList = Array.isArray(data.activePlans) ? data.activePlans : (Array.isArray(data) ? data : []);
 
   render();
 
  }catch(error){
-
-  document.getElementById(
-   "message"
-  ).innerHTML=`
-   <div class="error">
-    Users load nahi ho sakin.
-   </div>
+  console.error(error);
+  document.getElementById("message").innerHTML = `
+   <div class="error">Active plans load nahi ho sake.</div>
   `;
-
  }
-
 }
 
 function render(){
+ const list = document.getElementById("list");
+ const search = document.getElementById("search").value.trim().toLowerCase();
 
- const list=
-  document.getElementById("list");
+ const filtered = activePlansList.filter(item => {
+  const username = String(item.username || "").toLowerCase();
+  const planName = String(item.planName || item.name || "").toLowerCase();
+  return username.includes(search) || planName.includes(search);
+ });
 
- const search=
-  document.getElementById("search")
-  .value
-  .trim()
-  .toLowerCase();
-
- const filtered=
-  users.filter(user=>{
-
-   const username=
-    String(user.username||"")
-    .toLowerCase();
-
-   const phone=
-    String(user.phone||"")
-    .toLowerCase();
-
-   return(
-    username.includes(search) ||
-    phone.includes(search)
-   );
-
-  });
-
- document.getElementById(
-  "totalUsers"
- ).textContent=users.length;
-
- document.getElementById(
-  "planRecords"
- ).textContent=0;
+ document.getElementById("planRecords").textContent = activePlansList.length;
 
  if(!filtered.length){
-
-  list.innerHTML=`
+  list.innerHTML = `
    <tr>
-    <td colspan="8" class="empty">
-     No registered users found.
-    </td>
+    <td colspan="7" class="empty">Koi active plan nahi mila.</td>
    </tr>
   `;
-
   return;
-
  }
 
- list.innerHTML=
-  filtered.map((user,index)=>{
+ list.innerHTML = filtered.map((item, index) => {
+  const username = item.username || "-";
+  const planName = item.planName || item.name || "-";
+  const price = Number(item.price || 0).toLocaleString("en-PK");
+  const daily = Number(item.dailyProfit || item.daily || 0).toLocaleString("en-PK");
+  const days = item.days || "-";
+  const status = item.status || "Active";
 
-   return`
-
-    <tr>
-
-     <td>
-      ${index+1}
-     </td>
-
-     <td>
-      <b>
-       ${escapeHtml(
-        user.username||"-"
-       )}
-      </b>
-     </td>
-
-     <td>
-      ${escapeHtml(
-       user.phone||"-"
-      )}
-     </td>
-
-     <td>
-      -
-     </td>
-
-     <td>
-      -
-     </td>
-
-     <td>
-      -
-     </td>
-
-     <td>
-      -
-     </td>
-
-     <td>
-      <span class="status unavailable">
-       Not available
-      </span>
-     </td>
-
-    </tr>
-
-   `;
-
-  }).join("");
-
+  return `
+   <tr>
+    <td>${index + 1}</td>
+    <td><b>${escapeHtml(username)}</b></td>
+    <td>${escapeHtml(planName)}</td>
+    <td>Rs ${price}</td>
+    <td>Rs ${daily}</td>
+    <td>${escapeHtml(days)}</td>
+    <td><span class="status available">${escapeHtml(status)}</span></td>
+   </tr>
+  `;
+ }).join("");
 }
 
 function escapeHtml(value){
-
- return String(value??"")
+ return String(value ?? "")
   .replace(/&/g,"&amp;")
   .replace(/</g,"&lt;")
   .replace(/>/g,"&gt;")
   .replace(/"/g,"&quot;")
   .replace(/'/g,"&#039;");
-
 }
 
-loadUsers();
-
-setInterval(
- loadUsers,
- 5000
-);
-
+loadActivePlans();
+setInterval(loadActivePlans, 5000);
 </script></body>
 </html>
