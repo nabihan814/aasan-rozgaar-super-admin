@@ -1,0 +1,421 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bonuses - Admin</title><style>
+*{
+ box-sizing:border-box;
+ margin:0;
+ padding:0;
+ font-family:Arial,sans-serif;
+}
+
+body{
+ background:#f1f8f4;
+ color:#222;
+}
+
+.header{
+ background:linear-gradient(135deg,#087f3d,#12a854);
+ color:white;
+ padding:20px;
+ text-align:center;
+}
+
+.header h1{
+ font-size:24px;
+}
+
+.header p{
+ margin-top:6px;
+ opacity:.9;
+}
+
+.container{
+ width:95%;
+ max-width:1200px;
+ margin:20px auto;
+}
+
+.back{
+ display:inline-block;
+ background:#087f3d;
+ color:white;
+ text-decoration:none;
+ padding:10px 16px;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+
+.cards{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:15px;
+ margin-bottom:20px;
+}
+
+.card{
+ background:white;
+ border-radius:12px;
+ padding:18px;
+ box-shadow:0 3px 12px rgba(0,0,0,.08);
+ text-align:center;
+}
+
+.card h3{
+ color:#087f3d;
+ margin-bottom:8px;
+}
+
+.card strong{
+ font-size:22px;
+}
+
+.search{
+ width:100%;
+ padding:13px;
+ border:1px solid #ccc;
+ border-radius:8px;
+ margin-bottom:15px;
+ outline:none;
+}
+
+.table-box{
+ background:white;
+ border-radius:12px;
+ overflow:auto;
+ box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+table{
+ width:100%;
+ border-collapse:collapse;
+ min-width:800px;
+}
+
+th{
+ background:#087f3d;
+ color:white;
+ padding:12px;
+ text-align:left;
+}
+
+td{
+ padding:12px;
+ border-bottom:1px solid #eee;
+}
+
+.status{
+ padding:6px 10px;
+ border-radius:20px;
+ font-size:12px;
+ font-weight:bold;
+ display:inline-block;
+}
+
+.available{
+ background:#d4edda;
+ color:#155724;
+}
+
+.unavailable{
+ background:#eee;
+ color:#666;
+}
+
+.empty{
+ text-align:center;
+ padding:30px;
+ color:#777;
+}
+
+.error{
+ background:#f8d7da;
+ color:#842029;
+ padding:15px;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+
+.note{
+ background:#fff;
+ padding:15px;
+ border-left:4px solid #087f3d;
+ border-radius:8px;
+ margin-bottom:18px;
+ line-height:1.5;
+}
+
+@media(max-width:700px){
+ .cards{
+  grid-template-columns:1fr;
+ }
+
+ .header h1{
+  font-size:21px;
+ }
+}
+</style></head><body><div class="header">
+ <h1>Bonus Management</h1>
+ <p>Admin Panel</p>
+</div><div class="container"><a href="home.html" class="back">
+ ← Back to Home
+</a><div class="cards"> <div class="card">
+  <h3>Level 1</h3>
+  <strong>10%</strong>
+ </div> <div class="card">
+  <h3>Level 2</h3>
+  <strong>5%</strong>
+ </div> <div class="card">
+  <h3>Release</h3>
+  <strong>Manual</strong>
+ </div></div><div class="note">
+ <b>Bonus System:</b><br>
+ Registered users backend database se load ho rahe hain.
+ Bonus values is page par sirf display ke liye hain.
+ Balance ya account amount is page se change nahi hota.
+</div><input
+type="text"
+id="search"
+class="search"
+placeholder="Search username / phone..."
+oninput="renderUsers()"
+
+«»
+
+<div id="message"></div><div class="table-box"><table><thead>
+<tr>
+ <th>S.No.</th>
+ <th>User</th>
+ <th>Phone</th>
+ <th>Level 1 Bonus</th>
+ <th>Level 2 Bonus</th>
+ <th>Total Bonus</th>
+ <th>Status</th>
+</tr>
+</thead><tbody id="bonusTable"></tbody></table></div></div><script>
+
+const API_URL =
+ "https://aasan-rozgaar-backend.onrender.com";
+
+let users = [];
+
+function getAdminToken(){
+
+ return sessionStorage.getItem(
+  "adminSessionToken"
+ );
+
+}
+
+async function loadUsers(){
+
+ const token =
+  getAdminToken();
+
+ if(!token){
+
+  window.location.href =
+   "login.html";
+
+  return;
+
+ }
+
+ try{
+
+  const response =
+   await fetch(
+    API_URL + "/api/admin/users",
+    {
+     method:"GET",
+     credentials:"include",
+     headers:{
+      "Authorization":
+       "Bearer " + token
+     }
+    }
+   );
+
+  if(
+   response.status === 401 ||
+   response.status === 403
+  ){
+
+   sessionStorage.removeItem(
+    "adminSessionToken"
+   );
+
+   sessionStorage.removeItem(
+    "adminCsrfToken"
+   );
+
+   sessionStorage.removeItem(
+    "adminUsername"
+   );
+
+   localStorage.removeItem(
+    "adminLoggedIn"
+   );
+
+   window.location.href =
+    "login.html";
+
+   return;
+  }
+
+  if(!response.ok){
+
+   throw new Error(
+    "Failed to load users"
+   );
+
+  }
+
+  const data =
+   await response.json();
+
+  users =
+   Array.isArray(data.users)
+   ? data.users
+   : [];
+
+  renderUsers();
+
+ }catch(error){
+
+  document.getElementById(
+   "message"
+  ).innerHTML = `
+   <div class="error">
+    Users load nahi ho sakin.
+   </div>
+  `;
+
+ }
+
+}
+
+function renderUsers(){
+
+ const tbody =
+  document.getElementById(
+   "bonusTable"
+  );
+
+ const search =
+  document.getElementById(
+   "search"
+  ).value
+  .trim()
+  .toLowerCase();
+
+ const filtered =
+  users.filter(user=>{
+
+   const username =
+    String(
+     user.username || ""
+    ).toLowerCase();
+
+   const phone =
+    String(
+     user.phone || ""
+    ).toLowerCase();
+
+   return (
+    username.includes(search) ||
+    phone.includes(search)
+   );
+
+  });
+
+ if(!filtered.length){
+
+  tbody.innerHTML = `
+   <tr>
+    <td
+     colspan="7"
+     class="empty"
+    >
+     No registered users found.
+    </td>
+   </tr>
+  `;
+
+  return;
+ }
+
+ tbody.innerHTML =
+  filtered.map(
+   (user,index)=>{
+
+    const username =
+     user.username || "-";
+
+    const phone =
+     user.phone || "-";
+
+    return `
+     <tr>
+
+      <td>
+       ${index + 1}
+      </td>
+
+      <td>
+       <b>
+        ${escapeHtml(username)}
+       </b>
+      </td>
+
+      <td>
+       ${escapeHtml(phone)}
+      </td>
+
+      <td>
+       -
+      </td>
+
+      <td>
+       -
+      </td>
+
+      <td>
+       -
+      </td>
+
+      <td>
+       <span class="status unavailable">
+        Not available
+       </span>
+      </td>
+
+     </tr>
+    `;
+
+   }
+  ).join("");
+
+}
+
+function escapeHtml(value){
+
+ return String(value ?? "")
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+
+}
+
+loadUsers();
+
+setInterval(
+ loadUsers,
+ 5000
+);
+
+</script></body>
+</html>

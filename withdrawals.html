@@ -1,0 +1,505 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Withdrawals - Aasan Rozgaar</title><style>
+*{
+ box-sizing:border-box;
+}
+
+body{
+ margin:0;
+ background:#f4f7f6;
+ font-family:Arial,sans-serif;
+ color:#222;
+}
+
+.header{
+ background:linear-gradient(135deg,#087f5b,#0aa36f);
+ color:white;
+ padding:18px;
+}
+
+.header h1{
+ margin:0;
+ font-size:22px;
+}
+
+.container{
+ max-width:1000px;
+ margin:auto;
+ padding:15px;
+}
+
+.back{
+ display:inline-block;
+ background:#087f5b;
+ color:white;
+ text-decoration:none;
+ padding:10px 15px;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+
+.filters{
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap;
+ margin-bottom:15px;
+}
+
+.filters button{
+ border:0;
+ padding:10px 14px;
+ border-radius:8px;
+ background:white;
+ color:#333;
+ cursor:pointer;
+ box-shadow:0 2px 6px rgba(0,0,0,.05);
+}
+
+.filters button.active{
+ background:#087f5b;
+ color:white;
+}
+
+.search{
+ width:100%;
+ padding:12px;
+ border:1px solid #ccc;
+ border-radius:8px;
+ margin-bottom:15px;
+ outline:none;
+}
+
+.search:focus{
+ border-color:#087f5b;
+}
+
+.request{
+ background:white;
+ padding:17px;
+ border-radius:13px;
+ margin-bottom:12px;
+ box-shadow:0 3px 12px rgba(0,0,0,.06);
+}
+
+.top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
+ margin-bottom:12px;
+}
+
+.username{
+ margin:0;
+ color:#087f5b;
+ font-size:18px;
+}
+
+.status{
+ padding:5px 9px;
+ border-radius:20px;
+ font-size:12px;
+ font-weight:bold;
+ background:#eee;
+}
+
+.status.Pending{
+ background:#fff3cd;
+ color:#856404;
+}
+
+.status.Inprocess{
+ background:#d9edf7;
+ color:#31708f;
+}
+
+.status.Approved{
+ background:#dff5e9;
+ color:#087f5b;
+}
+
+.status.Rejected{
+ background:#f8d7da;
+ color:#842029;
+}
+
+.amount{
+ background:#f1fbf7;
+ border:1px solid #d7eee5;
+ padding:12px;
+ border-radius:9px;
+ margin-bottom:12px;
+}
+
+.amount-label{
+ color:#777;
+ font-size:12px;
+}
+
+.amount-value{
+ color:#087f5b;
+ font-size:22px;
+ font-weight:bold;
+ margin-top:3px;
+}
+
+.info{
+ color:#555;
+ font-size:14px;
+ line-height:1.8;
+}
+
+.info b{
+ color:#222;
+}
+
+.id{
+ margin-top:10px;
+ font-size:12px;
+ color:#888;
+ word-break:break-all;
+}
+
+.no-action{
+ margin-top:12px;
+ color:#888;
+ font-size:13px;
+}
+
+.empty{
+ background:white;
+ padding:30px 20px;
+ border-radius:12px;
+ text-align:center;
+ color:#777;
+}
+
+.error{
+ background:#f8d7da;
+ color:#842029;
+ padding:15px;
+ border-radius:10px;
+ margin-bottom:15px;
+}
+</style></head><body><div class="header">
+ <h1>💸 Withdrawals</h1>
+</div><div class="container"><a class="back" href="home.html">
+ ← Back to Home
+</a><div class="filters"> <button class="active" onclick="setFilter('All',this)">
+  All
+ </button> <button onclick="setFilter('Pending',this)">
+  Pending
+ </button> <button onclick="setFilter('Inprocess',this)">
+  Inprocess
+ </button> <button onclick="setFilter('Approved',this)">
+  Approved
+ </button> <button onclick="setFilter('Rejected',this)">
+  Rejected
+ </button></div><input
+class="search"
+id="search"
+type="search"
+placeholder="Search username or withdrawal ID..."
+oninput="render()"
+
+«»
+
+<div id="list"></div></div><script>
+
+const API_URL="https://aasan-rozgaar-backend.onrender.com";
+
+let filter="All";
+let requests=[];
+
+function getAdminToken(){
+
+ return sessionStorage.getItem(
+  "adminSessionToken"
+ );
+
+}
+
+async function loadRequests(){
+
+ const token=getAdminToken();
+
+ if(!token){
+
+  window.location.href="login.html";
+  return;
+
+ }
+
+ try{
+
+  const response=await fetch(
+   API_URL+"/api/admin/withdrawals",
+   {
+    method:"GET",
+    credentials:"include",
+    headers:{
+     "Authorization":"Bearer "+token
+    }
+   }
+  );
+
+  if(response.status===401 || response.status===403){
+
+   sessionStorage.removeItem("adminSessionToken");
+   sessionStorage.removeItem("adminCsrfToken");
+   sessionStorage.removeItem("adminUsername");
+   localStorage.removeItem("adminLoggedIn");
+
+   window.location.href="login.html";
+   return;
+  }
+
+  if(!response.ok){
+
+   throw new Error("Failed to load withdrawals.");
+
+  }
+
+  const data=await response.json();
+
+  requests=Array.isArray(data)
+   ? data
+   : Array.isArray(data.withdrawals)
+   ? data.withdrawals
+   : Array.isArray(data.requests)
+   ? data.requests
+   : [];
+
+  render();
+
+ }catch(error){
+
+  document.getElementById("list").innerHTML=`
+   <div class="error">
+    Withdrawals load nahi ho sakin.
+   </div>
+  `;
+
+ }
+
+}
+
+function setFilter(value,button){
+
+ filter=value;
+
+ document
+  .querySelectorAll(".filters button")
+  .forEach(btn=>{
+   btn.classList.remove("active");
+  });
+
+ button.classList.add("active");
+
+ render();
+
+}
+
+function render(){
+
+ const list=document.getElementById("list");
+
+ const search=document
+  .getElementById("search")
+  .value
+  .trim()
+  .toLowerCase();
+
+ const data=requests.filter(item=>{
+
+  const username=String(
+   item.username || ""
+  );
+
+  const id=String(
+   item.id ||
+   item.withdrawalId ||
+   item.withdrawal_id ||
+   ""
+  );
+
+  const method=String(
+   item.method || ""
+  );
+
+  const searchText=(
+   username+" "+
+   id+" "+
+   method
+  ).toLowerCase();
+
+  const status=String(
+   item.status || "Pending"
+  );
+
+  const statusMatch=
+   filter==="All" ||
+   status===filter;
+
+  const searchMatch=
+   searchText.includes(search);
+
+  return statusMatch && searchMatch;
+
+ });
+
+ if(!data.length){
+
+  list.innerHTML=`
+   <div class="empty">
+    Koi withdrawal request nahi mili.
+   </div>
+  `;
+
+  return;
+
+ }
+
+ list.innerHTML=data.map(item=>{
+
+  const status=
+   item.status || "Pending";
+
+  const amount=
+   Number(item.amount) || 0;
+
+  const withdrawalId=
+   item.id ||
+   item.withdrawalId ||
+   item.withdrawal_id ||
+   "-";
+
+  const date=
+   item.date ||
+   item.createdAt ||
+   item.created_at ||
+   "-";
+
+  return`
+
+   <div class="request">
+
+    <div class="top">
+
+     <h3 class="username">
+      ${escapeHtml(
+       item.username || "-"
+      )}
+     </h3>
+
+     <span class="status ${escapeHtml(status)}">
+      ${escapeHtml(status)}
+     </span>
+
+    </div>
+
+    <div class="amount">
+
+     <div class="amount-label">
+      Withdrawal Amount
+     </div>
+
+     <div class="amount-value">
+      ${amount.toLocaleString()}
+     </div>
+
+    </div>
+
+    <div class="info">
+
+     <b>Method:</b>
+     ${escapeHtml(
+      item.method || "-"
+     )}
+     <br>
+
+     <b>Account Name:</b>
+     ${escapeHtml(
+      item.accountName ||
+      item.account_name ||
+      "-"
+     )}
+     <br>
+
+     <b>Account Number:</b>
+     ${escapeHtml(
+      item.accountNumber ||
+      item.account_number ||
+      "-"
+     )}
+     <br>
+
+     <b>Date:</b>
+     ${escapeHtml(
+      formatDate(date)
+     )}
+
+    </div>
+
+    <div class="id">
+
+     Withdrawal ID:
+     ${escapeHtml(
+      withdrawalId
+     )}
+
+    </div>
+
+    <div class="no-action">
+
+     This request is displayed from the
+     backend database.
+
+    </div>
+
+   </div>
+
+  `;
+
+ }).join("");
+
+}
+
+function formatDate(value){
+
+ if(!value || value==="-" ){
+  return "-";
+ }
+
+ const date=new Date(value);
+
+ if(Number.isNaN(date.getTime())){
+  return String(value);
+ }
+
+ return date.toLocaleString();
+
+}
+
+function escapeHtml(value){
+
+ return String(value)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+
+}
+
+loadRequests();
+
+setInterval(
+ loadRequests,
+ 5000
+);
+
+</script></body>
+</html>

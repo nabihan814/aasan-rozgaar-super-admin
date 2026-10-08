@@ -1,0 +1,315 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aasan Rozgaar - Admin Login</title><style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#0f9d58,#087f45);
+    padding:20px;
+}
+
+.login-box{
+    width:100%;
+    max-width:390px;
+    background:#fff;
+    border-radius:20px;
+    padding:32px 25px;
+    box-shadow:0 15px 40px rgba(0,0,0,.20);
+}
+
+.logo{
+    width:75px;
+    height:75px;
+    border-radius:50%;
+    background:#0f9d58;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 15px;
+    font-size:30px;
+    font-weight:bold;
+}
+
+h1{
+    text-align:center;
+    color:#222;
+    font-size:24px;
+    margin-bottom:5px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#777;
+    font-size:14px;
+    margin-bottom:28px;
+}
+
+label{
+    display:block;
+    font-size:14px;
+    font-weight:bold;
+    color:#333;
+    margin-bottom:7px;
+}
+
+.input-box{
+    margin-bottom:18px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    outline:none;
+    font-size:15px;
+}
+
+input:focus{
+    border-color:#0f9d58;
+}
+
+.login-btn{
+    width:100%;
+    border:0;
+    padding:14px;
+    border-radius:10px;
+    background:#0f9d58;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.login-btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.message{
+    display:none;
+    margin-top:15px;
+    padding:12px;
+    border-radius:9px;
+    text-align:center;
+    font-size:14px;
+}
+
+.error{
+    background:#ffe7e7;
+    color:#c62828;
+}
+
+.success{
+    background:#e5f8ed;
+    color:#087f45;
+}
+
+.footer{
+    text-align:center;
+    margin-top:22px;
+    font-size:12px;
+    color:#999;
+}
+</style></head><body><div class="login-box"><div class="logo">AR</div>
+
+<h1>Admin Panel</h1>
+<div class="subtitle">Aasan Rozgaar Management</div>
+
+<form id="loginForm">
+
+    <div class="input-box">
+        <label>Admin Username</label>
+        <input
+            type="text"
+            id="username"
+            placeholder="Enter username"
+            autocomplete="username"
+            required
+        >
+    </div>
+
+    <div class="input-box">
+        <label>Password</label>
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter password"
+            autocomplete="current-password"
+            required
+        >
+    </div>
+
+    <button type="submit" class="login-btn" id="loginButton">
+        Login
+    </button>
+
+    <div id="message" class="message"></div>
+
+</form>
+
+<div class="footer">
+    Admin access only
+</div>
+
+</div><script>
+
+const API_URL =
+    "https://aasan-rozgaar-backend.onrender.com";
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const usernameInput =
+    document.getElementById("username");
+
+const passwordInput =
+    document.getElementById("password");
+
+const loginButton =
+    document.getElementById("loginButton");
+
+const message =
+    document.getElementById("message");
+
+function showMessage(text, type){
+
+    message.textContent = text;
+
+    message.className =
+        "message " +
+        (type === "success" ? "success" : "error");
+
+    message.style.display = "block";
+}
+
+loginForm.addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+    const username =
+        usernameInput.value.trim();
+
+    const password =
+        passwordInput.value;
+
+    if(!username || !password){
+
+        showMessage(
+            "Username aur password dono likhein.",
+            "error"
+        );
+
+        return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = "Logging in...";
+
+    try{
+
+        const response = await fetch(
+            API_URL + "/api/admin/login",
+            {
+                method:"POST",
+                credentials:"include",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Accept":"application/json"
+                },
+                body:JSON.stringify({
+                    username:username,
+                    password:password
+                })
+            }
+        );
+
+        let data = null;
+
+        try{
+            data = await response.json();
+        }catch(error){
+            data = null;
+        }
+
+        if(!response.ok || !data || data.success !== true){
+
+            throw new Error(
+                data?.message ||
+                "Admin login failed."
+            );
+        }
+
+        if(data.sessionToken){
+
+            sessionStorage.setItem(
+                "adminSessionToken",
+                data.sessionToken
+            );
+        }
+
+        if(data.csrfToken){
+
+            sessionStorage.setItem(
+                "adminCsrfToken",
+                data.csrfToken
+            );
+        }
+
+        sessionStorage.setItem(
+            "adminUsername",
+            data.admin?.username || username
+        );
+
+        localStorage.setItem(
+            "adminLoggedIn",
+            "true"
+        );
+
+        localStorage.setItem(
+            "adminUsername",
+            data.admin?.username || username
+        );
+
+        showMessage(
+            "Login successful. Opening Super Admin...",
+            "success"
+        );
+
+        setTimeout(function(){
+
+            window.location.href = "./home.html";
+
+        },700);
+
+    }catch(error){
+
+        console.error("Admin login error:", error);
+
+        showMessage(
+            error.message ||
+            "Login nahi ho saka. Dobara try karein.",
+            "error"
+        );
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Login";
+
+    }
+
+});
+
+</script></body>
+</html>

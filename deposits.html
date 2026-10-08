@@ -1,0 +1,489 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deposits - Aasan Rozgaar</title><style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ background:#f4f7f6;
+ font-family:Arial,sans-serif;
+}
+
+.header{
+ background:linear-gradient(135deg,#087f5b,#0aa36f);
+ color:white;
+ padding:18px;
+}
+
+.header h1{
+ margin:0;
+ font-size:22px;
+}
+
+.container{
+ max-width:1000px;
+ margin:auto;
+ padding:15px;
+}
+
+.back{
+ display:inline-block;
+ background:#087f5b;
+ color:white;
+ text-decoration:none;
+ padding:10px 15px;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+
+.filters{
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap;
+ margin-bottom:15px;
+}
+
+.filters button{
+ padding:10px 14px;
+ border:0;
+ border-radius:7px;
+ background:white;
+ color:#333;
+ cursor:pointer;
+}
+
+.filters button.active{
+ background:#087f5b;
+ color:white;
+}
+
+.search{
+ width:100%;
+ padding:12px;
+ border:1px solid #ccc;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+
+.request{
+ background:white;
+ padding:17px;
+ border-radius:12px;
+ margin-bottom:12px;
+ box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+
+.request h3{
+ margin:0 0 8px;
+ color:#087f5b;
+}
+
+.info{
+ color:#666;
+ font-size:14px;
+ line-height:1.8;
+}
+
+.amount{
+ font-size:18px;
+ color:#087f5b;
+ font-weight:bold;
+}
+
+.status{
+ display:inline-block;
+ padding:4px 9px;
+ border-radius:6px;
+ font-size:12px;
+ font-weight:bold;
+}
+
+.status.Pending{
+ background:#fff3cd;
+ color:#856404;
+}
+
+.status.Inprocess{
+ background:#cfe2ff;
+ color:#084298;
+}
+
+.status.Approved{
+ background:#d1e7dd;
+ color:#0f5132;
+}
+
+.status.Rejected{
+ background:#f8d7da;
+ color:#842029;
+}
+
+.screenshot{
+ margin-top:12px;
+}
+
+.screenshot img{
+ width:100%;
+ max-width:300px;
+ max-height:300px;
+ object-fit:contain;
+ border-radius:8px;
+ border:1px solid #ddd;
+ display:block;
+}
+
+.empty{
+ background:white;
+ padding:25px;
+ border-radius:12px;
+ text-align:center;
+ color:#777;
+}
+
+.details-box{
+ background:#f8faf9;
+ padding:10px;
+ border-radius:8px;
+ margin-top:10px;
+ white-space:pre-wrap;
+ word-break:break-word;
+ color:#555;
+ font-size:13px;
+}
+</style></head><body><div class="header">
+ <h1>💰 Deposits</h1>
+</div><div class="container"><a class="back" href="home.html">
+ ← Back to Home
+</a><div class="filters"> <button class="active" onclick="setFilter('All',this)">
+  All
+ </button> <button onclick="setFilter('Pending',this)">
+  Pending
+ </button> <button onclick="setFilter('Inprocess',this)">
+  Inprocess
+ </button> <button onclick="setFilter('Approved',this)">
+  Approved
+ </button> <button onclick="setFilter('Rejected',this)">
+  Rejected
+ </button></div><input
+class="search"
+id="search"
+placeholder="Search username or TRX ID..."
+oninput="render()"
+
+«»
+
+<div id="list"></div></div><script>
+
+const API_URL="https://aasan-rozgaar-backend.onrender.com";
+
+let filter="All";
+let deposits=[];
+
+function getAdminToken(){
+
+ return sessionStorage.getItem("adminSessionToken") || "";
+
+}
+
+function setFilter(value,button){
+
+ filter=value;
+
+ document
+  .querySelectorAll(".filters button")
+  .forEach(function(b){
+   b.classList.remove("active");
+  });
+
+ button.classList.add("active");
+
+ render();
+
+}
+
+async function loadDeposits(){
+
+ const token=getAdminToken();
+
+ if(!token){
+
+  window.location.href="login.html";
+  return;
+
+ }
+
+ try{
+
+  const response=await fetch(
+   API_URL+"/api/admin/deposits",
+   {
+    method:"GET",
+    headers:{
+     "Authorization":"Bearer "+token
+    },
+    credentials:"include"
+   }
+  );
+
+  const data=await response.json();
+
+  if(response.status===401 || response.status===403){
+
+   sessionStorage.removeItem("adminSessionToken");
+   sessionStorage.removeItem("adminCsrfToken");
+
+   localStorage.removeItem("adminLoggedIn");
+   localStorage.removeItem("adminUsername");
+
+   window.location.href="login.html";
+   return;
+
+  }
+
+  if(!response.ok || !data.success){
+
+   throw new Error(
+    data.message || "Deposits load nahi ho sakin."
+   );
+
+  }
+
+  deposits=
+   Array.isArray(data.deposits)
+    ? data.deposits
+    : [];
+
+  render();
+
+ }catch(error){
+
+  document.getElementById("list").innerHTML=
+   '<div class="empty">'+
+   escapeHtml(
+    error.message ||
+    "Deposits load nahi ho sakin."
+   )+
+   '</div>';
+
+ }
+
+}
+
+function render(){
+
+ const list=document.getElementById("list");
+
+ const search=
+  document.getElementById("search")
+   .value
+   .toLowerCase()
+   .trim();
+
+ let data=deposits.filter(function(item){
+
+  const status=
+   String(item.status||"Pending");
+
+  const matchesFilter=
+   filter==="All" ||
+   status.toLowerCase()===
+   filter.toLowerCase();
+
+  const text=
+   (item.username||"")+" "+
+   (item.transactionId||item.trxid||"")+" "+
+   (item.id||"")+" "+
+   (item.method||"");
+
+  return(
+   matchesFilter &&
+   text.toLowerCase().includes(search)
+  );
+
+ });
+
+ data.sort(function(a,b){
+
+  const dateA=
+   new Date(
+    a.createdAt ||
+    a.updatedAt ||
+    0
+   ).getTime();
+
+  const dateB=
+   new Date(
+    b.createdAt ||
+    b.updatedAt ||
+    0
+   ).getTime();
+
+  return dateB-dateA;
+
+ });
+
+ if(!data.length){
+
+  list.innerHTML=
+   '<div class="empty">Koi deposit request nahi mili.</div>';
+
+  return;
+
+ }
+
+ list.innerHTML=data.map(function(item){
+
+  const status=
+   item.status || "Pending";
+
+  const amount=
+   Number(item.amount)||0;
+
+  const transactionId=
+   item.transactionId ||
+   item.trxid ||
+   "-";
+
+  let screenshot="";
+
+  if(item.screenshot){
+
+   screenshot=`
+
+    <div class="screenshot">
+
+     <b>Screenshot:</b>
+
+     <br><br>
+
+     <img
+      src="${escapeHtml(item.screenshot)}"
+      alt="Deposit Screenshot"
+     >
+
+    </div>
+
+   `;
+
+  }
+
+  let details="";
+
+  if(item.details){
+
+   details=`
+
+    <div class="details-box">
+
+     <b>Payment Details:</b><br>
+
+     ${escapeHtml(item.details)}
+
+    </div>
+
+   `;
+
+  }
+
+  const date=
+   formatDate(
+    item.createdAt ||
+    item.date ||
+    item.updatedAt
+   );
+
+  return `
+
+   <div class="request">
+
+    <h3>
+     ${escapeHtml(item.username || "-")}
+    </h3>
+
+    <div class="info">
+
+     Amount:
+     <span class="amount">
+      ${amount.toLocaleString("en-PK")}
+     </span>
+
+     <br>
+
+     Method:
+     ${escapeHtml(item.method || "-")}
+
+     <br>
+
+     TRX ID:
+     ${escapeHtml(transactionId)}
+
+     <br>
+
+     Status:
+
+     <span class="status ${escapeHtml(status)}">
+      ${escapeHtml(status)}
+     </span>
+
+     <br>
+
+     Date:
+     ${escapeHtml(date)}
+
+     <br>
+
+     Request ID:
+     ${escapeHtml(item.id || "-")}
+
+    </div>
+
+    ${details}
+
+    ${screenshot}
+
+   </div>
+
+  `;
+
+ }).join("");
+
+}
+
+function formatDate(value){
+
+ if(!value){
+  return "-";
+ }
+
+ const date=new Date(value);
+
+ if(isNaN(date.getTime())){
+  return String(value);
+ }
+
+ return date.toLocaleString("en-PK");
+
+}
+
+function escapeHtml(value){
+
+ return String(value)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+
+}
+
+loadDeposits();
+
+setInterval(
+ loadDeposits,
+ 5000
+);
+
+</script></body>
+</html>

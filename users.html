@@ -1,0 +1,230 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Users - Aasan Rozgaar</title><style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#f4f7f6;
+ font-family:Arial,sans-serif;
+}
+.header{
+ background:linear-gradient(135deg,#087f5b,#0aa36f);
+ color:white;
+ padding:18px;
+}
+.header h1{margin:0;font-size:22px}
+.container{
+ max-width:1000px;
+ margin:auto;
+ padding:15px;
+}
+.back{
+ display:inline-block;
+ background:#087f5b;
+ color:white;
+ text-decoration:none;
+ padding:10px 15px;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+.search{
+ width:100%;
+ padding:13px;
+ border:1px solid #ccc;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+.user{
+ background:white;
+ padding:17px;
+ border-radius:12px;
+ margin-bottom:12px;
+ box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+.row{
+ display:flex;
+ justify-content:space-between;
+ gap:10px;
+ flex-wrap:wrap;
+}
+.name{
+ font-weight:bold;
+ color:#087f5b;
+ font-size:17px;
+}
+.small{
+ color:#777;
+ font-size:13px;
+ margin-top:5px;
+}
+.btn{
+ border:0;
+ background:#087f5b;
+ color:white;
+ padding:9px 13px;
+ border-radius:7px;
+}
+.empty{
+ background:white;
+ padding:25px;
+ text-align:center;
+ color:#777;
+ border-radius:12px;
+}
+</style></head><body><div class="header">
+ <h1>👥 Users</h1>
+</div><div class="container"><a class="back" href="home.html">← Back to Home</a>
+
+<input
+class="search"
+id="search"
+placeholder="Search username, phone or email..."
+oninput="render()"
+
+«»
+
+<div id="list"></div></div><script>
+
+const API_URL="https://aasan-rozgaar-backend.onrender.com";
+
+let allUsers=[];
+
+function getAdminToken(){
+ return sessionStorage.getItem("adminSessionToken") || "";
+}
+
+async function loadUsers(){
+
+ const token=getAdminToken();
+
+ if(!token){
+  window.location.href="login.html";
+  return;
+ }
+
+ try{
+
+  const response=await fetch(
+   API_URL+"/api/admin/users",
+   {
+    method:"GET",
+    headers:{
+     "Authorization":"Bearer "+token
+    },
+    credentials:"include"
+   }
+  );
+
+  const data=await response.json();
+
+  if(response.status===401 || response.status===403){
+   sessionStorage.removeItem("adminSessionToken");
+   sessionStorage.removeItem("adminCsrfToken");
+   localStorage.removeItem("adminLoggedIn");
+   localStorage.removeItem("adminUsername");
+   window.location.href="login.html";
+   return;
+  }
+
+  if(!response.ok || !data.success){
+   throw new Error(data.message || "Unable to load users");
+  }
+
+  allUsers=Array.isArray(data.users) ? data.users : [];
+
+  render();
+
+ }catch(error){
+
+  document.getElementById("list").innerHTML=
+   '<div class="empty">'+
+   escapeHtml(error.message || "Users load nahi ho sake.")+
+   '</div>';
+ }
+}
+
+function render(){
+
+ const list=document.getElementById("list");
+
+ const search=
+  document.getElementById("search").value
+   .trim()
+   .toLowerCase();
+
+ const users=allUsers.filter(u=>{
+
+  const text=
+   (u.username||"")+" "+
+   (u.phone||"");
+
+  return text.toLowerCase().includes(search);
+ });
+
+ if(!users.length){
+  list.innerHTML=
+   '<div class="empty">Abhi koi registered user nahi mila.</div>';
+  return;
+ }
+
+ list.innerHTML=users.map(u=>{
+
+  const username=u.username||"Unknown";
+
+  const status=
+   String(u.status||"Active").toLowerCase()==="blocked"
+    ? "Blocked"
+    : "Active";
+
+  return `
+   <div class="user">
+    <div class="row">
+
+     <div>
+      <div class="name">${escapeHtml(username)}</div>
+      <div class="small">Phone: ${escapeHtml(u.phone||"-")}</div>
+      <div class="small">Status: ${escapeHtml(status)}</div>
+     </div>
+
+     <div>
+      <button class="btn"
+       onclick="openUser('${encodeURIComponent(username)}')">
+       View Details
+      </button>
+     </div>
+
+    </div>
+   </div>
+  `;
+
+ }).join("");
+}
+
+function openUser(username){
+
+ localStorage.setItem(
+  "adminSelectedUser",
+  decodeURIComponent(username)
+ );
+
+ window.location.href="user-details.html";
+}
+
+function escapeHtml(value){
+
+ return String(value)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+}
+
+loadUsers();
+
+setInterval(loadUsers,5000);
+
+</script></body>
+</html>

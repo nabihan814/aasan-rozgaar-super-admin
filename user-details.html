@@ -1,0 +1,381 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>User Details - Aasan Rozgaar</title><style>
+*{
+ box-sizing:border-box;
+}
+
+body{
+ margin:0;
+ background:#f4f7f6;
+ font-family:Arial,sans-serif;
+}
+
+.header{
+ background:linear-gradient(135deg,#087f5b,#0aa36f);
+ color:white;
+ padding:18px;
+}
+
+.header h1{
+ margin:0;
+ font-size:22px;
+}
+
+.container{
+ max-width:700px;
+ margin:auto;
+ padding:15px;
+}
+
+.back{
+ display:inline-block;
+ background:#087f5b;
+ color:white;
+ text-decoration:none;
+ padding:10px 15px;
+ border-radius:8px;
+ margin-bottom:15px;
+}
+
+.box{
+ background:white;
+ padding:20px;
+ border-radius:13px;
+ margin-bottom:15px;
+ box-shadow:0 3px 12px rgba(0,0,0,.06);
+}
+
+.item{
+ padding:12px 0;
+ border-bottom:1px solid #eee;
+}
+
+.item:last-child{
+ border-bottom:0;
+}
+
+.label{
+ color:#777;
+ font-size:13px;
+}
+
+.value{
+ font-weight:bold;
+ margin-top:4px;
+}
+
+.message{
+ text-align:center;
+ color:#777;
+ padding:20px;
+}
+
+.status-active{
+ color:#087f5b;
+}
+
+.status-blocked{
+ color:#d9534f;
+}
+
+.balance-box{
+ background:#f1fbf7;
+ border:1px solid #d5eee4;
+ padding:15px;
+ border-radius:10px;
+ margin-top:15px;
+}
+
+.balance-current{
+ font-size:24px;
+ font-weight:bold;
+ color:#087f5b;
+ margin-top:5px;
+}
+</style></head><body><div class="header">
+ <h1>👤 User Details</h1>
+</div><div class="container"><a class="back" href="users.html">← Back to Users</a>
+
+<div id="content"></div></div><script>
+
+const API_URL="https://aasan-rozgaar-backend.onrender.com";
+
+const username=
+ localStorage.getItem("adminSelectedUser");
+
+function getAdminToken(){
+
+ return sessionStorage.getItem("adminSessionToken") || "";
+
+}
+
+async function loadUser(){
+
+ const content=
+  document.getElementById("content");
+
+ const token=getAdminToken();
+
+ if(!token){
+
+  window.location.href="login.html";
+  return;
+
+ }
+
+ if(!username){
+
+  content.innerHTML=`
+   <div class="box message">
+    User select nahi hua.
+    <br><br>
+    <a href="users.html">Users par wapas jayein</a>
+   </div>
+  `;
+
+  return;
+
+ }
+
+ content.innerHTML=`
+  <div class="box message">
+   User details load ho rahi hain...
+  </div>
+ `;
+
+ try{
+
+  const response=await fetch(
+   API_URL+"/api/admin/users",
+   {
+    method:"GET",
+    headers:{
+     "Authorization":"Bearer "+token
+    },
+    credentials:"include"
+   }
+  );
+
+  const data=await response.json();
+
+  if(response.status===401 || response.status===403){
+
+   sessionStorage.removeItem("adminSessionToken");
+   sessionStorage.removeItem("adminCsrfToken");
+
+   localStorage.removeItem("adminLoggedIn");
+   localStorage.removeItem("adminUsername");
+
+   window.location.href="login.html";
+   return;
+
+  }
+
+  if(!response.ok || !data.success){
+
+   throw new Error(
+    data.message || "User details load nahi ho sakin."
+   );
+
+  }
+
+  const users=
+   Array.isArray(data.users)
+    ? data.users
+    : [];
+
+  const user=
+   users.find(u=>
+    String(u.username||"").toLowerCase()===
+    String(username).toLowerCase()
+   );
+
+  if(!user){
+
+   content.innerHTML=`
+    <div class="box message">
+     User nahi mila.
+     <br><br>
+     <a href="users.html">Users par wapas jayein</a>
+    </div>
+   `;
+
+   return;
+
+  }
+
+  renderUser(user);
+
+ }catch(error){
+
+  content.innerHTML=`
+   <div class="box message">
+    ${escapeHtml(
+     error.message ||
+     "User details load nahi ho sakin."
+    )}
+   </div>
+  `;
+
+ }
+
+}
+
+function renderUser(user){
+
+ const content=
+  document.getElementById("content");
+
+ const isBlocked=
+  String(user.status||"")
+   .toLowerCase()==="blocked";
+
+ const status=
+  isBlocked
+   ? "Blocked"
+   : "Active";
+
+ const statusClass=
+  isBlocked
+   ? "status-blocked"
+   : "status-active";
+
+ const balance=
+  Number(user.balance||0);
+
+ let registrationDate="-";
+
+ if(user.createdAt){
+
+  const date=
+   new Date(user.createdAt);
+
+  if(!isNaN(date.getTime())){
+
+   registrationDate=
+    date.toLocaleString("en-PK");
+
+  }
+
+ }
+
+ content.innerHTML=`
+
+  <div class="box">
+
+   <div class="item">
+
+    <div class="label">
+     Username
+    </div>
+
+    <div class="value">
+     ${escapeHtml(user.username||"-")}
+    </div>
+
+   </div>
+
+   <div class="item">
+
+    <div class="label">
+     Phone
+    </div>
+
+    <div class="value">
+     ${escapeHtml(user.phone||"-")}
+    </div>
+
+   </div>
+
+   <div class="item">
+
+    <div class="label">
+     Referral ID
+    </div>
+
+    <div class="value">
+     ${escapeHtml(user.referralCode||"-")}
+    </div>
+
+   </div>
+
+   <div class="item">
+
+    <div class="label">
+     Referred By
+    </div>
+
+    <div class="value">
+     ${escapeHtml(user.referredBy||"-")}
+    </div>
+
+   </div>
+
+   <div class="item">
+
+    <div class="label">
+     Status
+    </div>
+
+    <div class="value ${statusClass}">
+     ${status}
+    </div>
+
+   </div>
+
+   <div class="item">
+
+    <div class="label">
+     Registration Date
+    </div>
+
+    <div class="value">
+     ${escapeHtml(registrationDate)}
+    </div>
+
+   </div>
+
+  </div>
+
+  <div class="box">
+
+   <h3>
+    💰 Balance
+   </h3>
+
+   <div class="balance-box">
+
+    <div class="label">
+     Current Balance
+    </div>
+
+    <div class="balance-current">
+     ${balance.toLocaleString("en-PK")}
+    </div>
+
+   </div>
+
+  </div>
+
+ `;
+
+}
+
+function escapeHtml(value){
+
+ return String(value)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+
+}
+
+loadUser();
+
+</script></body>
+</html>

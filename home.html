@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aasan Rozgaar - Admin Home</title><style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#f4f7f6;
+ font-family:Arial,sans-serif;
+ color:#222;
+}
+.header{
+ background:linear-gradient(135deg,#087f5b,#0aa36f);
+ color:white;
+ padding:20px;
+ text-align:center;
+}
+.header h1{
+ margin:0;
+ font-size:24px;
+}
+.header p{
+ margin:7px 0 0;
+ opacity:.9;
+}
+.container{
+ max-width:950px;
+ margin:auto;
+ padding:20px 15px;
+}
+.welcome{
+ background:white;
+ padding:20px;
+ border-radius:14px;
+ margin-bottom:18px;
+ box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+.welcome h2{
+ margin:0 0 7px;
+ color:#087f5b;
+}
+.welcome p{
+ margin:0;
+ color:#777;
+}
+.grid{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:15px;
+}
+.card{
+ background:white;
+ padding:22px 15px;
+ border-radius:14px;
+ text-decoration:none;
+ color:#222;
+ text-align:center;
+ box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+.card:active{
+ transform:scale(.98);
+}
+.icon{
+ font-size:34px;
+ margin-bottom:9px;
+}
+.card h3{
+ margin:0 0 6px;
+ color:#087f5b;
+}
+.card p{
+ margin:0;
+ color:#777;
+ font-size:13px;
+}
+.logout{
+ width:100%;
+ margin-top:18px;
+ padding:13px;
+ border:0;
+ border-radius:9px;
+ background:#d9534f;
+ color:white;
+ font-size:15px;
+}
+footer{
+ text-align:center;
+ color:#888;
+ padding:25px 0 10px;
+ font-size:13px;
+}
+@media(max-width:600px){
+ .grid{grid-template-columns:1fr}
+}
+</style></head><body><div class="header">
+ <h1>🏠 Aasan Rozgaar</h1>
+ <p>Admin Home</p>
+</div><div class="container"> <div class="welcome">
+  <h2 id="welcomeTitle">Welcome Admin</h2>
+  <p>Yahan se admin panel ki tamam files open karein.</p>
+ </div> <div class="grid">  <a class="card" href="users.html">
+   <div class="icon">👥</div>
+   <h3>Users</h3>
+   <p>Registered users manage karein</p>
+  </a>  <a class="card" href="user-details.html">
+   <div class="icon">👤</div>
+   <h3>User Details</h3>
+   <p>User ki details dekhein</p>
+  </a>  <a class="card" href="deposits.html">
+   <div class="icon">💰</div>
+   <h3>Deposits</h3>
+   <p>Deposit requests dekhein</p>
+  </a>  <a class="card" href="withdrawals.html">
+   <div class="icon">💸</div>
+   <h3>Withdrawals</h3>
+   <p>Withdrawal requests dekhein</p>
+  </a>  <a class="card" href="bonuses.html">
+   <div class="icon">🎁</div>
+   <h3>Bonuses</h3>
+   <p>Bonus records dekhein</p>
+  </a>  <a class="card" href="plans.html">
+   <div class="icon">📦</div>
+   <h3>Plans</h3>
+   <p>Plans aur active plans</p>
+  </a>  <a class="card" href="transactions.html">
+   <div class="icon">💳</div>
+   <h3>Transactions</h3>
+   <p>All transactions dekhein</p>
+  </a>  <a class="card" href="settings.html">
+   <div class="icon">⚙️</div>
+   <h3>Settings</h3>
+   <p>Admin settings</p>
+  </a> </div><button class="logout" onclick="logout()">🚪 Logout</button>
+
+ <footer>Aasan Rozgaar Admin Panel</footer></div><script>
+
+const API_URL =
+"https://aasan-rozgaar-backend.onrender.com";
+
+const token =
+sessionStorage.getItem(
+"adminSessionToken"
+);
+
+if(!token){
+
+ window.location.href="login.html";
+
+}
+
+async function checkAdmin(){
+
+ try{
+
+  const response =
+  await fetch(
+   API_URL+"/api/admin/me",
+   {
+    method:"GET",
+    credentials:"include",
+    headers:{
+     "Authorization":
+     "Bearer "+token
+    }
+   }
+  );
+
+  if(
+   response.status===401 ||
+   response.status===403
+  ){
+
+   clearSession();
+   window.location.href="login.html";
+   return;
+
+  }
+
+  if(!response.ok){
+   return;
+  }
+
+  const data =
+  await response.json();
+
+  const username =
+  data.username ||
+  data.admin?.username ||
+  sessionStorage.getItem(
+   "adminUsername"
+  ) ||
+  "Admin";
+
+  document.getElementById(
+   "welcomeTitle"
+  ).textContent =
+  "Welcome "+username;
+
+ }catch(error){
+
+  document.getElementById(
+   "welcomeTitle"
+  ).textContent =
+  "Welcome Admin";
+
+ }
+
+}
+
+async function logout(){
+
+ const csrfToken =
+ sessionStorage.getItem(
+  "adminCsrfToken"
+ );
+
+ try{
+
+  await fetch(
+   API_URL+"/api/admin/logout",
+   {
+    method:"POST",
+    credentials:"include",
+    headers:{
+     "Authorization":
+     "Bearer "+token,
+     "X-CSRF-Token":
+     csrfToken || ""
+    }
+   }
+  );
+
+ }catch(error){
+
+ }
+
+ clearSession();
+
+ window.location.href="login.html";
+
+}
+
+function clearSession(){
+
+ sessionStorage.removeItem(
+  "adminSessionToken"
+ );
+
+ sessionStorage.removeItem(
+  "adminCsrfToken"
+ );
+
+ sessionStorage.removeItem(
+  "adminUsername"
+ );
+
+ localStorage.removeItem(
+  "adminLoggedIn"
+ );
+
+ localStorage.removeItem(
+  "adminUsername"
+ );
+
+}
+
+checkAdmin();
+
+</script></body>
+</html>

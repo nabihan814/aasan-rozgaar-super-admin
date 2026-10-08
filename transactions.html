@@ -1,0 +1,761 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transactions - Aasan Rozgaar</title><style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    background:#f4f7f6;
+    font-family:Arial,sans-serif;
+    color:#222
+}
+
+.header{
+    background:linear-gradient(135deg,#087f5b,#0aa36f);
+    color:white;
+    padding:18px
+}
+
+.header h1{
+    margin:0;
+    font-size:22px
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:15px
+}
+
+.back{
+    display:inline-block;
+    background:#087f5b;
+    color:white;
+    text-decoration:none;
+    padding:10px 15px;
+    border-radius:8px;
+    margin-bottom:15px
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:15px
+}
+
+.card{
+    background:white;
+    padding:16px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06)
+}
+
+.card h3{
+    margin:0 0 7px;
+    color:#087f5b;
+    font-size:14px
+}
+
+.card strong{
+    font-size:21px
+}
+
+.filters{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:12px
+}
+
+.filters button{
+    padding:10px 14px;
+    border:0;
+    border-radius:7px;
+    background:white;
+    color:#333;
+    cursor:pointer
+}
+
+.filters button.active{
+    background:#087f5b;
+    color:white
+}
+
+.search{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    margin-bottom:15px;
+    outline:none
+}
+
+.tablebox{
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    overflow-x:auto
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:950px
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+    text-align:left;
+    font-size:14px
+}
+
+th{
+    color:#087f5b;
+    background:#f8fbfa
+}
+
+.badge{
+    display:inline-block;
+    padding:6px 9px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold
+}
+
+.deposit{
+    background:#d8f5e7;
+    color:#087f5b
+}
+
+.withdrawal{
+    background:#ffe0e0;
+    color:#a00000
+}
+
+.bonus{
+    background:#fff0c7;
+    color:#856404
+}
+
+.plan{
+    background:#e0e8ff;
+    color:#3451a4
+}
+
+.empty{
+    text-align:center;
+    color:#777;
+    padding:25px
+}
+
+.error{
+    background:#f8d7da;
+    color:#842029;
+    padding:14px;
+    border-radius:8px;
+    margin-bottom:15px
+}
+
+.info{
+    background:white;
+    border-left:4px solid #087f5b;
+    padding:14px;
+    border-radius:8px;
+    margin-bottom:15px;
+    line-height:1.5;
+    font-size:14px
+}
+
+@media(max-width:700px){
+    .cards{
+        grid-template-columns:repeat(2,1fr)
+    }
+}
+
+@media(max-width:450px){
+    .cards{
+        grid-template-columns:1fr
+    }
+}
+</style></head><body><div class="header">
+    <h1>💳 Transactions</h1>
+</div><div class="container"><a class="back" href="home.html">
+    ← Back to Home
+</a><div class="cards"><div class="card">
+    <h3>Total Transactions</h3>
+    <strong id="total">0</strong>
+</div>
+
+<div class="card">
+    <h3>Deposits</h3>
+    <strong id="depositTotal">0</strong>
+</div>
+
+<div class="card">
+    <h3>Withdrawals</h3>
+    <strong id="withdrawTotal">0</strong>
+</div>
+
+<div class="card">
+    <h3>Other Records</h3>
+    <strong id="otherTotal">0</strong>
+</div>
+
+</div><div class="info">
+    <b>Transaction Records</b><br>
+    Deposit aur withdrawal records backend database se read kiye ja rahe hain.
+    Is page par koi transaction, balance ya account amount change nahi hota.
+</div><div id="message"></div><div class="filters"><button class="active" onclick="setFilter('All',this)">
+    All
+</button><button onclick="setFilter('Deposit',this)">
+    Deposits
+</button><button onclick="setFilter('Withdrawal',this)">
+    Withdrawals
+</button></div><input
+class="search"
+id="search"
+placeholder="Search username, transaction ID or method..."
+oninput="render()"
+
+«»
+
+<div class="tablebox"><table><thead>
+<tr>
+<th>User</th>
+<th>Type</th>
+<th>Amount</th>
+<th>Method</th>
+<th>Transaction ID</th>
+<th>Status</th>
+<th>Date</th>
+</tr>
+</thead><tbody id="list"></tbody></table></div></div><script>
+
+const API_URL =
+    "https://aasan-rozgaar-backend.onrender.com";
+
+let filter="All";
+
+let deposits=[];
+
+let withdrawals=[];
+
+function getAdminToken(){
+
+    return sessionStorage.getItem(
+        "adminSessionToken"
+    );
+
+}
+
+async function loadData(){
+
+    const token=
+        getAdminToken();
+
+    if(!token){
+
+        window.location.href="login.html";
+        return;
+
+    }
+
+    try{
+
+        const headers={
+            "Authorization":
+                "Bearer "+token
+        };
+
+        const options={
+            method:"GET",
+            credentials:"include",
+            headers:headers
+        };
+
+        const [
+            depositsResponse,
+            withdrawalsResponse
+        ]=await Promise.all([
+
+            fetch(
+                API_URL+
+                "/api/admin/deposits",
+                options
+            ),
+
+            fetch(
+                API_URL+
+                "/api/admin/withdrawals",
+                options
+            )
+
+        ]);
+
+        if(
+            depositsResponse.status===401 ||
+            depositsResponse.status===403 ||
+            withdrawalsResponse.status===401 ||
+            withdrawalsResponse.status===403
+        ){
+
+            clearAdminSession();
+
+            window.location.href=
+                "login.html";
+
+            return;
+
+        }
+
+        if(
+            !depositsResponse.ok ||
+            !withdrawalsResponse.ok
+        ){
+
+            throw new Error(
+                "Failed to load transactions."
+            );
+
+        }
+
+        const depositsData=
+            await depositsResponse.json();
+
+        const withdrawalsData=
+            await withdrawalsResponse.json();
+
+        deposits=
+            Array.isArray(
+                depositsData
+            )
+            ? depositsData
+            : Array.isArray(
+                depositsData.deposits
+            )
+            ? depositsData.deposits
+            : Array.isArray(
+                depositsData.requests
+            )
+            ? depositsData.requests
+            : [];
+
+        withdrawals=
+            Array.isArray(
+                withdrawalsData
+            )
+            ? withdrawalsData
+            : Array.isArray(
+                withdrawalsData.withdrawals
+            )
+            ? withdrawalsData.withdrawals
+            : Array.isArray(
+                withdrawalsData.requests
+            )
+            ? withdrawalsData.requests
+            : [];
+
+        document.getElementById(
+            "message"
+        ).innerHTML="";
+
+        render();
+
+    }catch(error){
+
+        document.getElementById(
+            "message"
+        ).innerHTML=`
+            <div class="error">
+                Transactions load nahi ho sakin.
+            </div>
+        `;
+
+        deposits=[];
+        withdrawals=[];
+
+        render();
+
+    }
+
+}
+
+function clearAdminSession(){
+
+    sessionStorage.removeItem(
+        "adminSessionToken"
+    );
+
+    sessionStorage.removeItem(
+        "adminCsrfToken"
+    );
+
+    sessionStorage.removeItem(
+        "adminUsername"
+    );
+
+    localStorage.removeItem(
+        "adminLoggedIn"
+    );
+
+}
+
+function setFilter(
+    value,
+    button
+){
+
+    filter=value;
+
+    document
+        .querySelectorAll(
+            ".filters button"
+        )
+        .forEach(
+            b=>
+                b.classList.remove(
+                    "active"
+                )
+        );
+
+    button.classList.add(
+        "active"
+    );
+
+    render();
+
+}
+
+function buildData(){
+
+    const depositData=
+        deposits.map(
+            item=>({
+
+                user:
+                    item.username ||
+                    item.user ||
+                    "-",
+
+                type:"Deposit",
+
+                amount:
+                    Number(
+                        item.amount
+                    ) || 0,
+
+                method:
+                    item.method ||
+                    "-",
+
+                id:
+                    item.trxid ||
+                    item.transactionId ||
+                    item.transaction_id ||
+                    item.id ||
+                    "-",
+
+                status:
+                    item.status ||
+                    "-",
+
+                date:
+                    item.approvedAt ||
+                    item.updatedAt ||
+                    item.createdAt ||
+                    item.created_at ||
+                    item.date ||
+                    "-"
+
+            })
+        );
+
+    const withdrawalData=
+        withdrawals.map(
+            item=>({
+
+                user:
+                    item.username ||
+                    item.user ||
+                    "-",
+
+                type:"Withdrawal",
+
+                amount:
+                    Number(
+                        item.amount
+                    ) || 0,
+
+                method:
+                    item.method ||
+                    "-",
+
+                id:
+                    item.trxid ||
+                    item.transactionId ||
+                    item.transaction_id ||
+                    item.id ||
+                    "-",
+
+                status:
+                    item.status ||
+                    "-",
+
+                date:
+                    item.approvedAt ||
+                    item.updatedAt ||
+                    item.createdAt ||
+                    item.created_at ||
+                    item.date ||
+                    "-"
+
+            })
+        );
+
+    return[
+        ...depositData,
+        ...withdrawalData
+    ];
+
+}
+
+function render(){
+
+    const search=
+        document
+            .getElementById(
+                "search"
+            )
+            .value
+            .toLowerCase()
+            .trim();
+
+    const allData=
+        buildData();
+
+    const depositCount=
+        allData.filter(
+            x=>x.type==="Deposit"
+        ).length;
+
+    const withdrawalCount=
+        allData.filter(
+            x=>x.type==="Withdrawal"
+        ).length;
+
+    document.getElementById(
+        "total"
+    ).textContent=
+        allData.length;
+
+    document.getElementById(
+        "depositTotal"
+    ).textContent=
+        depositCount;
+
+    document.getElementById(
+        "withdrawTotal"
+    ).textContent=
+        withdrawalCount;
+
+    document.getElementById(
+        "otherTotal"
+    ).textContent="0";
+
+    let data=
+        allData;
+
+    if(filter!=="All"){
+
+        data=
+            data.filter(
+                x=>x.type===filter
+            );
+
+    }
+
+    data=
+        data.filter(
+            x=>{
+
+                const text=
+                    String(
+                        x.user||""
+                    )+" "+
+                    String(
+                        x.id||""
+                    )+" "+
+                    String(
+                        x.method||""
+                    );
+
+                return text
+                    .toLowerCase()
+                    .includes(
+                        search
+                    );
+
+            }
+        );
+
+    const list=
+        document.getElementById(
+            "list"
+        );
+
+    if(!data.length){
+
+        list.innerHTML=`
+            <tr>
+                <td
+                    colspan="7"
+                    class="empty"
+                >
+                    Koi transaction nahi mili.
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+    list.innerHTML=
+        data.map(
+            x=>{
+
+                const badgeClass=
+                    x.type==="Deposit"
+                    ? "deposit"
+                    : "withdrawal";
+
+                return`
+
+                <tr>
+
+                    <td>
+                        <b>
+                            ${escapeHtml(
+                                x.user
+                            )}
+                        </b>
+                    </td>
+
+                    <td>
+                        <span
+                            class="badge ${badgeClass}"
+                        >
+                            ${escapeHtml(
+                                x.type
+                            )}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${Number(
+                            x.amount||0
+                        ).toLocaleString()}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            x.method
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            x.id
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            x.status
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            formatDate(
+                                x.date
+                            )
+                        )}
+                    </td>
+
+                </tr>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+function formatDate(value){
+
+    if(
+        !value ||
+        value==="-"
+    ){
+        return "-";
+    }
+
+    const date=
+        new Date(value);
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+
+        return String(value);
+
+    }
+
+    return date.toLocaleString();
+
+}
+
+function escapeHtml(value){
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+loadData();
+
+setInterval(
+    loadData,
+    5000
+);
+
+</script></body>
+</html>
