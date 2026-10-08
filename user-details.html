@@ -1,381 +1,246 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>User Details - Aasan Rozgaar</title><style>
-*{
- box-sizing:border-box;
-}
-
-body{
- margin:0;
- background:#f4f7f6;
- font-family:Arial,sans-serif;
-}
-
-.header{
- background:linear-gradient(135deg,#087f5b,#0aa36f);
- color:white;
- padding:18px;
-}
-
-.header h1{
- margin:0;
- font-size:22px;
-}
-
-.container{
- max-width:700px;
- margin:auto;
- padding:15px;
-}
-
-.back{
- display:inline-block;
- background:#087f5b;
- color:white;
- text-decoration:none;
- padding:10px 15px;
- border-radius:8px;
- margin-bottom:15px;
-}
-
-.box{
- background:white;
- padding:20px;
- border-radius:13px;
- margin-bottom:15px;
- box-shadow:0 3px 12px rgba(0,0,0,.06);
-}
-
-.item{
- padding:12px 0;
- border-bottom:1px solid #eee;
-}
-
-.item:last-child{
- border-bottom:0;
-}
-
-.label{
- color:#777;
- font-size:13px;
-}
-
-.value{
- font-weight:bold;
- margin-top:4px;
-}
-
-.message{
- text-align:center;
- color:#777;
- padding:20px;
-}
-
-.status-active{
- color:#087f5b;
-}
-
-.status-blocked{
- color:#d9534f;
-}
-
-.balance-box{
- background:#f1fbf7;
- border:1px solid #d5eee4;
- padding:15px;
- border-radius:10px;
- margin-top:15px;
-}
-
-.balance-current{
- font-size:24px;
- font-weight:bold;
- color:#087f5b;
- margin-top:5px;
-}
-</style></head><body><div class="header">
- <h1>👤 User Details</h1>
-</div><div class="container"><a class="back" href="users.html">← Back to Users</a>
-
-<div id="content"></div></div><script>
-
-const API_URL="https://aasan-rozgaar-backend.onrender.com";
-
-const username=
- localStorage.getItem("adminSelectedUser");
-
-function getAdminToken(){
-
- return sessionStorage.getItem("adminSessionToken") || "";
-
-}
-
-async function loadUser(){
-
- const content=
-  document.getElementById("content");
-
- const token=getAdminToken();
-
- if(!token){
-
-  window.location.href="login.html";
-  return;
-
- }
-
- if(!username){
-
-  content.innerHTML=`
-   <div class="box message">
-    User select nahi hua.
-    <br><br>
-    <a href="users.html">Users par wapas jayein</a>
-   </div>
-  `;
-
-  return;
-
- }
-
- content.innerHTML=`
-  <div class="box message">
-   User details load ho rahi hain...
-  </div>
- `;
-
- try{
-
-  const response=await fetch(
-   API_URL+"/api/admin/users",
-   {
-    method:"GET",
-    headers:{
-     "Authorization":"Bearer "+token
-    },
-    credentials:"include"
-   }
-  );
-
-  const data=await response.json();
-
-  if(response.status===401 || response.status===403){
-
-   sessionStorage.removeItem("adminSessionToken");
-   sessionStorage.removeItem("adminCsrfToken");
-
-   localStorage.removeItem("adminLoggedIn");
-   localStorage.removeItem("adminUsername");
-
-   window.location.href="login.html";
-   return;
-
-  }
-
-  if(!response.ok || !data.success){
-
-   throw new Error(
-    data.message || "User details load nahi ho sakin."
-   );
-
-  }
-
-  const users=
-   Array.isArray(data.users)
-    ? data.users
-    : [];
-
-  const user=
-   users.find(u=>
-    String(u.username||"").toLowerCase()===
-    String(username).toLowerCase()
-   );
-
-  if(!user){
-
-   content.innerHTML=`
-    <div class="box message">
-     User nahi mila.
-     <br><br>
-     <a href="users.html">Users par wapas jayein</a>
-    </div>
-   `;
-
-   return;
-
-  }
-
-  renderUser(user);
-
- }catch(error){
-
-  content.innerHTML=`
-   <div class="box message">
-    ${escapeHtml(
-     error.message ||
-     "User details load nahi ho sakin."
-    )}
-   </div>
-  `;
-
- }
-
-}
-
-function renderUser(user){
-
- const content=
-  document.getElementById("content");
-
- const isBlocked=
-  String(user.status||"")
-   .toLowerCase()==="blocked";
-
- const status=
-  isBlocked
-   ? "Blocked"
-   : "Active";
-
- const statusClass=
-  isBlocked
-   ? "status-blocked"
-   : "status-active";
-
- const balance=
-  Number(user.balance||0);
-
- let registrationDate="-";
-
- if(user.createdAt){
-
-  const date=
-   new Date(user.createdAt);
-
-  if(!isNaN(date.getTime())){
-
-   registrationDate=
-    date.toLocaleString("en-PK");
-
-  }
-
- }
-
- content.innerHTML=`
-
-  <div class="box">
-
-   <div class="item">
-
-    <div class="label">
-     Username
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Users - Aasan Rozgaar Admin</title>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+    body {
+        background: #f4f7f6;
+        color: #222;
+        padding-bottom: 40px;
+    }
+    .header {
+        background: linear-gradient(135deg, #087f5b, #0aa36f);
+        color: white;
+        padding: 18px;
+        text-align: center;
+    }
+    .header h1 {
+        font-size: 22px;
+    }
+    .container {
+        max-width: 900px;
+        margin: 15px auto;
+        padding: 0 15px;
+    }
+    .back {
+        display: inline-block;
+        background: #087f5b;
+        color: white;
+        text-decoration: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    .search-box {
+        margin-bottom: 15px;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 14px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        font-size: 15px;
+        outline: none;
+    }
+    .search-box input:focus {
+        border-color: #087f5b;
+    }
+    .user-card {
+        background: white;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+    }
+    .user-card:active {
+        transform: scale(0.99);
+    }
+    .user-info h3 {
+        color: #087f5b;
+        font-size: 17px;
+        margin-bottom: 4px;
+    }
+    .user-info p {
+        color: #666;
+        font-size: 13px;
+        margin: 2px 0;
+    }
+    .user-status {
+        text-align: right;
+    }
+    .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .badge-active {
+        background: #e5f8ed;
+        color: #087f5b;
+    }
+    .badge-blocked {
+        background: #ffe7e7;
+        color: #c62828;
+    }
+    .message {
+        text-align: center;
+        color: #777;
+        padding: 30px;
+        background: white;
+        border-radius: 12px;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>👥 Registered Users</h1>
+</div>
+
+<div class="container">
+    <a class="back" href="home.html">← Back to Dashboard</a>
+
+    <!-- Search Bar -->
+    <div class="search-box">
+        <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search by username or phone number..." 
+            onkeyup="filterUsers()"
+        >
     </div>
 
-    <div class="value">
-     ${escapeHtml(user.username||"-")}
+    <!-- Users List Container -->
+    <div id="usersList">
+        <div class="message">Loading users...</div>
     </div>
+</div>
 
-   </div>
+<script>
+const API_URL = "https://aasan-rozgaar-backend.onrender.com";
+const token = sessionStorage.getItem("adminSessionToken");
 
-   <div class="item">
-
-    <div class="label">
-     Phone
-    </div>
-
-    <div class="value">
-     ${escapeHtml(user.phone||"-")}
-    </div>
-
-   </div>
-
-   <div class="item">
-
-    <div class="label">
-     Referral ID
-    </div>
-
-    <div class="value">
-     ${escapeHtml(user.referralCode||"-")}
-    </div>
-
-   </div>
-
-   <div class="item">
-
-    <div class="label">
-     Referred By
-    </div>
-
-    <div class="value">
-     ${escapeHtml(user.referredBy||"-")}
-    </div>
-
-   </div>
-
-   <div class="item">
-
-    <div class="label">
-     Status
-    </div>
-
-    <div class="value ${statusClass}">
-     ${status}
-    </div>
-
-   </div>
-
-   <div class="item">
-
-    <div class="label">
-     Registration Date
-    </div>
-
-    <div class="value">
-     ${escapeHtml(registrationDate)}
-    </div>
-
-   </div>
-
-  </div>
-
-  <div class="box">
-
-   <h3>
-    💰 Balance
-   </h3>
-
-   <div class="balance-box">
-
-    <div class="label">
-     Current Balance
-    </div>
-
-    <div class="balance-current">
-     ${balance.toLocaleString("en-PK")}
-    </div>
-
-   </div>
-
-  </div>
-
- `;
-
+if (!token) {
+    window.location.href = "login.html";
 }
 
-function escapeHtml(value){
+let allUsersData = [];
 
- return String(value)
-  .replace(/&/g,"&amp;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;")
-  .replace(/"/g,"&quot;")
-  .replace(/'/g,"&#039;");
+async function fetchUsers() {
+    const listContainer = document.getElementById("usersList");
 
+    try {
+        const response = await fetch(API_URL + "/api/admin/users", {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Accept": "application/json"
+            }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            sessionStorage.clear();
+            window.location.href = "login.html";
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Users load nahi ho sake.");
+        }
+
+        allUsersData = Array.isArray(data.users) ? data.users : [];
+        renderUsers(allUsersData);
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        listContainer.innerHTML = `
+            <div class="message" style="color: #c62828;">
+                ${escapeHtml(error.message || "Users load karne mein masla aaya.")}
+            </div>
+        `;
+    }
 }
 
-loadUser();
+function renderUsers(users) {
+    const listContainer = document.getElementById("usersList");
 
-</script></body>
+    if (users.length === 0) {
+        listContainer.innerHTML = `<div class="message">Koi user nahi mila.</div>`;
+        return;
+    }
+
+    let html = "";
+    users.forEach(user => {
+        const username = user.username || "Unknown";
+        const phone = user.phone || "-";
+        const balance = Number(user.balance || 0).toLocaleString("en-PK");
+        const isBlocked = String(user.status || "").toLowerCase() === "blocked";
+        const statusText = isBlocked ? "Blocked" : "Active";
+        const statusClass = isBlocked ? "badge-blocked" : "badge-active";
+
+        html += `
+            <div class="user-card" onclick="viewUserDetails('${escapeHtml(username)}')">
+                <div class="user-info">
+                    <h3>${escapeHtml(username)}</h3>
+                    <p>📞 ${escapeHtml(phone)}</p>
+                    <p>💰 Balance: Rs ${balance}</p>
+                </div>
+                <div class="user-status">
+                    <span class="badge ${statusClass}">${statusText}</span>
+                </div>
+            </div>
+        `;
+    });
+
+    listContainer.innerHTML = html;
+}
+
+function filterUsers() {
+    const query = document.getElementById("searchInput").value.toLowerCase().trim();
+    
+    const filtered = allUsersData.filter(user => {
+        const username = String(user.username || "").toLowerCase();
+        const phone = String(user.phone || "").toLowerCase();
+        return username.includes(query) || phone.includes(query);
+    });
+
+    renderUsers(filtered);
+}
+
+function viewUserDetails(username) {
+    localStorage.setItem("adminSelectedUser", username);
+    window.location.href = "user-details.html";
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+fetchUsers();
+</script>
+
+</body>
 </html>
