@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -108,14 +109,6 @@ input:focus {
     transform: scale(0.99);
 }
 
-.btn-login-as {
-    background: #17a2b8;
-}
-
-.btn-block {
-    background: #d9534f;
-}
-
 .btn-search {
     background: #087f5b;
 }
@@ -124,8 +117,8 @@ input:focus {
     background: #0aa36f;
 }
 
-.btn-unblock {
-    background: #087f5b;
+.btn-block {
+    background: #d9534f;
 }
 
 .btn:disabled {
@@ -238,13 +231,17 @@ input:focus {
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div class="header">
+
     <h1>⚙️ Admin Control Settings</h1>
+
 </div>
+
 
 <div class="container">
 
@@ -260,6 +257,7 @@ input:focus {
     <div class="box">
 
         <h2>Reset User Password</h2>
+
 
         <div class="form-group">
 
@@ -357,45 +355,7 @@ input:focus {
 
 
     <!-- =====================================================
-         2. DIRECT LOGIN AS USER
-         ===================================================== -->
-
-    <div class="box">
-
-        <h2>Direct Login As User</h2>
-
-        <div class="form-group">
-
-            <label>Username</label>
-
-            <input
-                type="text"
-                id="loginUsername"
-                placeholder="Enter username to login"
-                autocomplete="off"
-            >
-
-        </div>
-
-
-        <button
-            class="btn btn-login-as"
-            onclick="loginAsUser()"
-        >
-            Login to User Account
-        </button>
-
-
-        <div
-            id="loginMsg"
-            class="msg"
-        ></div>
-
-    </div>
-
-
-    <!-- =====================================================
-         3. BLOCK / UNBLOCK USER
+         2. BLOCK / UNBLOCK USER
          ===================================================== -->
 
     <div class="box">
@@ -419,6 +379,7 @@ input:focus {
 
         <button
             class="btn btn-block"
+            id="blockUserBtn"
             onclick="blockUser()"
         >
             Block User
@@ -494,7 +455,7 @@ if (!getAdminToken()) {
 
 
 /* =========================================================
-   COMMON REQUEST HEADERS
+   COMMON ADMIN HEADERS
    ========================================================= */
 
 function adminHeaders(includeJson = false) {
@@ -527,7 +488,7 @@ function adminHeaders(includeJson = false) {
 
 
 /* =========================================================
-   1. SEARCH USER FOR PASSWORD RESET
+   1. SEARCH USER
    ========================================================= */
 
 async function searchUserForPasswordReset() {
@@ -576,8 +537,6 @@ async function searchUserForPasswordReset() {
         );
 
 
-    /* Reset previous result */
-
     foundBox.style.display =
         "none";
 
@@ -616,24 +575,22 @@ async function searchUserForPasswordReset() {
 
     try {
 
+        /*
+         * Backend ka existing admin users route
+         */
+
         const response =
             await fetch(
                 API_URL +
-                "/api/admin/users/password/search",
+                "/api/admin/users",
                 {
-                    method: "POST",
+                    method: "GET",
 
                     credentials:
                         "include",
 
                     headers:
-                        adminHeaders(true),
-
-                    body:
-                        JSON.stringify({
-                            username,
-                            phone
-                        })
+                        adminHeaders(false)
                 }
             );
 
@@ -647,7 +604,44 @@ async function searchUserForPasswordReset() {
 
             throw new Error(
                 data.message ||
-                "User nahi mila."
+                "Users load nahi ho sake."
+            );
+
+        }
+
+
+        const users =
+            Array.isArray(data.users)
+                ? data.users
+                : [];
+
+
+        /*
+         * Exact username + phone match
+         */
+
+        const user =
+            users.find(
+                item =>
+
+                    String(
+                        item.username || ""
+                    ).toLowerCase() ===
+                    username.toLowerCase()
+
+                    &&
+
+                    String(
+                        item.phone || ""
+                    ) ===
+                    phone
+            );
+
+
+        if (!user) {
+
+            throw new Error(
+                "Username aur phone match karne wala user nahi mila."
             );
 
         }
@@ -664,26 +658,26 @@ async function searchUserForPasswordReset() {
             "User mil gaya.";
 
 
-        const foundUsername =
-            data.user &&
-            data.user.username
-                ? data.user.username
-                : username;
-
-
-        const foundPhone =
-            data.user &&
-            data.user.phone
-                ? data.user.phone
-                : phone;
-
-
         details.innerHTML =
+
             "<strong>Username:</strong> " +
-            escapeHtml(foundUsername) +
+            escapeHtml(
+                user.username
+            ) +
+
             "<br>" +
+
             "<strong>Phone:</strong> " +
-            escapeHtml(foundPhone);
+            escapeHtml(
+                user.phone
+            ) +
+
+            "<br>" +
+
+            "<strong>Status:</strong> " +
+            escapeHtml(
+                user.status
+            );
 
 
         foundBox.style.display =
@@ -873,7 +867,8 @@ async function resetUserPassword() {
         .getElementById(
             "userFoundBox"
         )
-        .style.display = "none";
+        .style.display =
+            "none";
 
 
     } catch (error) {
@@ -899,123 +894,7 @@ async function resetUserPassword() {
 
 
 /* =========================================================
-   3. DIRECT LOGIN AS USER
-   ========================================================= */
-
-async function loginAsUser() {
-
-    const username =
-        document
-        .getElementById(
-            "loginUsername"
-        )
-        .value
-        .trim();
-
-
-    const msgDiv =
-        document.getElementById(
-            "loginMsg"
-        );
-
-
-    if (!username) {
-
-        msgDiv.className =
-            "msg error";
-
-        msgDiv.textContent =
-            "Username likhna lazmi hai.";
-
-        return;
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                API_URL +
-                "/api/admin/impersonate",
-                {
-                    method: "POST",
-
-                    credentials:
-                        "include",
-
-                    headers:
-                        adminHeaders(true),
-
-                    body:
-                        JSON.stringify({
-                            username
-                        })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok ||
-            !data.success) {
-
-            throw new Error(
-                data.message ||
-                "Login fail ho gaya."
-            );
-
-        }
-
-
-        if (data.sessionToken) {
-
-            localStorage.setItem(
-                "userSessionToken",
-                data.sessionToken
-            );
-
-        }
-
-
-        localStorage.setItem(
-            "username",
-            username
-        );
-
-
-        msgDiv.className =
-            "msg success";
-
-        msgDiv.textContent =
-            "Redirecting to user account...";
-
-
-        setTimeout(() => {
-
-            window.location.href =
-                "https://nabihan814.github.io/aasan-rozgaar/home.html";
-
-        }, 1000);
-
-
-    } catch (error) {
-
-        msgDiv.className =
-            "msg error";
-
-        msgDiv.textContent =
-            error.message ||
-            "User login nahi ho saka.";
-
-    }
-
-}
-
-
-/* =========================================================
-   4. BLOCK USER
+   3. BLOCK USER
    ========================================================= */
 
 async function blockUser() {
@@ -1035,6 +914,12 @@ async function blockUser() {
         );
 
 
+    const blockButton =
+        document.getElementById(
+            "blockUserBtn"
+        );
+
+
     if (!username) {
 
         msgDiv.className =
@@ -1047,12 +932,23 @@ async function blockUser() {
     }
 
 
+    blockButton.disabled =
+        true;
+
+    blockButton.textContent =
+        "Blocking...";
+
+
     try {
 
         const response =
             await fetch(
                 API_URL +
-                "/api/admin/users/block",
+                "/api/admin/users/" +
+                encodeURIComponent(
+                    username
+                ) +
+                "/block",
                 {
                     method: "PATCH",
 
@@ -1060,12 +956,7 @@ async function blockUser() {
                         "include",
 
                     headers:
-                        adminHeaders(true),
-
-                    body:
-                        JSON.stringify({
-                            username
-                        })
+                        adminHeaders(false)
                 }
             );
 
@@ -1111,13 +1002,21 @@ async function blockUser() {
             error.message ||
             "User block nahi ho saka.";
 
+    } finally {
+
+        blockButton.disabled =
+            false;
+
+        blockButton.textContent =
+            "Block User";
+
     }
 
 }
 
 
 /* =========================================================
-   5. LOAD BLOCKED USERS
+   4. LOAD BLOCKED USERS
    ========================================================= */
 
 async function loadBlockedUsers() {
@@ -1128,17 +1027,18 @@ async function loadBlockedUsers() {
         );
 
 
-    const token =
-        getAdminToken();
-
-
-    if (!token) {
+    if (!getAdminToken()) {
 
         window.location.href =
             "login.html";
 
         return;
+
     }
+
+
+    container.innerHTML =
+        '<div class="loading">Loading...</div>';
 
 
     try {
@@ -1188,11 +1088,13 @@ async function loadBlockedUsers() {
                 '</div>';
 
             return;
+
         }
 
 
         container.innerHTML =
-            users.map(
+            users
+            .map(
                 user => {
 
                     const username =
@@ -1202,34 +1104,46 @@ async function loadBlockedUsers() {
 
 
                     return `
+
                         <div
                             class="blocked-user"
                             onclick="unblockUser('${escapeJs(username)}')"
                         >
 
                             <span class="blocked-name">
-                                ${escapeHtml(username)}
+
+                                ${escapeHtml(
+                                    username
+                                )}
+
                             </span>
 
+
                             <span class="blocked-status">
+
                                 BLOCKED • Tap to Unblock
+
                             </span>
 
                         </div>
+
                     `;
 
                 }
-            ).join("");
+            )
+            .join("");
 
 
     } catch (error) {
 
         container.innerHTML =
             '<div class="empty">' +
+
             escapeHtml(
                 error.message ||
                 "Blocked users load nahi ho sake."
             ) +
+
             '</div>';
 
     }
@@ -1238,7 +1152,7 @@ async function loadBlockedUsers() {
 
 
 /* =========================================================
-   6. UNBLOCK USER
+   5. UNBLOCK USER
    ========================================================= */
 
 async function unblockUser(username) {
@@ -1261,12 +1175,22 @@ async function unblockUser(username) {
     }
 
 
+    const msgDiv =
+        document.getElementById(
+            "blockMsg"
+        );
+
+
     try {
 
         const response =
             await fetch(
                 API_URL +
-                "/api/admin/users/unblock",
+                "/api/admin/users/" +
+                encodeURIComponent(
+                    username
+                ) +
+                "/unblock",
                 {
                     method: "PATCH",
 
@@ -1274,12 +1198,7 @@ async function unblockUser(username) {
                         "include",
 
                     headers:
-                        adminHeaders(true),
-
-                    body:
-                        JSON.stringify({
-                            username
-                        })
+                        adminHeaders(false)
                 }
             );
 
@@ -1299,12 +1218,6 @@ async function unblockUser(username) {
         }
 
 
-        const msgDiv =
-            document.getElementById(
-                "blockMsg"
-            );
-
-
         msgDiv.className =
             "msg success";
 
@@ -1316,12 +1229,6 @@ async function unblockUser(username) {
 
 
     } catch (error) {
-
-        const msgDiv =
-            document.getElementById(
-                "blockMsg"
-            );
-
 
         msgDiv.className =
             "msg error";
@@ -1336,17 +1243,37 @@ async function unblockUser(username) {
 
 
 /* =========================================================
-   7. SECURITY HELPERS
+   6. SECURITY HELPERS
    ========================================================= */
 
 function escapeHtml(value) {
 
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
 
@@ -1354,11 +1281,31 @@ function escapeHtml(value) {
 function escapeJs(value) {
 
     return String(value)
-        .replace(/\\/g, "\\\\")
-        .replace(/'/g, "\\'")
-        .replace(/"/g, '\\"')
-        .replace(/\n/g, "\\n")
-        .replace(/\r/g, "\\r");
+
+        .replace(
+            /\\/g,
+            "\\\\"
+        )
+
+        .replace(
+            /'/g,
+            "\\'"
+        )
+
+        .replace(
+            /"/g,
+            '\\"'
+        )
+
+        .replace(
+            /\n/g,
+            "\\n"
+        )
+
+        .replace(
+            /\r/g,
+            "\\r"
+        );
 
 }
 
